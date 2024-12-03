@@ -488,7 +488,7 @@ export default {
             <div class="flex justify-between items-center mb-3 sm:mb-4">
                 <div class="flex items-center gap-2">                       
                     <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-purple-500 flex-shrink-0">
-                        <img src="https://placehold.co/400x400/purple/white?text=AI" alt="AI Assistant"
+                        <img src="https://img.freepik.com/free-vector/chatbot-chat-message-vectorart_78370-4104.jpg" alt="AI Assistant"
                             class="w-full h-full object-cover" />
                     </div>
                     <div class="min-w-0">
@@ -527,10 +527,12 @@ export default {
                     ]">
                         <div class="flex items-center gap-1.5 sm:gap-2 mb-1">
                             <img v-if="message.sender === 'bot'"
-                                src="https://placehold.co/400x400/purple/white?text=AI" alt="AI"
+                                src="https://img.freepik.com/free-vector/chatbot-chat-message-vectorart_78370-4104.jpg" alt="AI"
                                 class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-purple-500/30" />
+                            <span v-if="message.sender === 'bot'" class="text-xs text-purple-300 object-cover">HomeCraft AI</span>
                             <img v-else :src="user.profilePictureUrl || '/default-user.png'" alt="User"
-                                class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-purple-500/30" />
+                                class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-purple-500/30 object-cover" />
+                            <span v-if="message.sender === 'user'" class="text-xs text-purple-300">{{ user.name }}</span>
                         </div>
                         <p :class="{ 'animate-pulse': message.loading }" class="leading-relaxed text-xs sm:text-sm break-words">
                             {{ message.text }}

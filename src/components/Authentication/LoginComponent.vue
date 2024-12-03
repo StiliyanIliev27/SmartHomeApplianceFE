@@ -68,7 +68,7 @@ export default {
                 await this.$nextTick()
                 this.$router.push('/')
             } catch (error) {
-                this.error = error.response?.data?.message || 'Invalid email or password'
+                this.error = error.response?.data.errorMessages[0] || 'Invalid email or password'
                 console.error('Login error:', error)
             } finally {
                 this.isLoading = false

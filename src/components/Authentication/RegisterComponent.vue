@@ -109,7 +109,7 @@ export default {
                 formData.append('password', userData.password);
 
                 if (userData.profilePicture) {
-                    formData.append('profilePictureUrl', userData.profilePicture);
+                    formData.append('profilePicture', userData.profilePicture);
                 }
 
                 const response = await fetch('https://localhost:7200/api/auth/register', {

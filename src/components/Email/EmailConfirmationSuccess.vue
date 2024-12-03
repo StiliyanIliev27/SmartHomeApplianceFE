@@ -13,7 +13,7 @@ export default {
 
         if (token && userId) {
             try {
-                const response = await fetch(`/api/Email/confirm-email?token=${token}&userId=${userId}`, {
+                const response = await fetch(`https://localhost:7200/api/Email/confirm-email?token=${token}&userId=${userId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -21,9 +21,9 @@ export default {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Email confirmation failed');
+                    const errorData = await response.json();
+                    throw new Error(errorData || 'Email confirmation failed');
                 }
-
                 this.isConfirming = false;
             } catch (error) {
                 console.error('Confirmation error:', error);

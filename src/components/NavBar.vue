@@ -75,28 +75,6 @@ export default {
                 }
             })
         },
-        formatImgurUrl(url) {
-            if (!url || url === 'undefined' || url.includes('undefined')) {
-                return ''; // или върнете URL към изображение по подразбиране
-            }
-
-            try {
-                // Проверяваме дали URL-ът е валиден Imgur линк
-                if (!url.includes('imgur.com')) return url;
-
-                // Ако URL-ът вече е в правилния формат (i.imgur.com)
-                if (url.includes('i.imgur.com')) return url;
-
-                // Извличаме ID-то на изображението
-                const imgurId = url.split('/').pop();
-                if (!imgurId) return '';
-
-                return `https://i.imgur.com/${imgurId}.jpg`;
-            } catch (error) {
-                console.error('Error formatting Imgur URL:', error);
-                return ''; // или върнете URL към изображение по подразбиране
-            }
-        },
         handleImageError(event) {
             // Заменяме със стандартна икона при грешка при зареждане на изображението
             event.target.style.display = 'none';
@@ -128,6 +106,10 @@ export default {
                 { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
                 { name: 'Sign out', href: '#', icon: ArrowRightStartOnRectangleIcon, actions: this.handleSignOut }
             ]
+        },
+        getFullName() {
+            if (!this.user) return '';
+            return `${this.user.firstName} ${this.user.lastName}`;
         },
         userProfilePicture() {
             return this.user?.profilePictureUrl || '';
@@ -174,7 +156,7 @@ export default {
                         <Menu as="div" class="relative ml-3">
                             <div>
                                 <MenuButton class="flex rounded-full bg-white text-sm focus:outline-none">
-                                    <img v-if="userProfilePicture" :src="formatImgurUrl(userProfilePicture)"
+                                    <img v-if="userProfilePicture" :src="user.profilePictureUrl"
                                         class="h-8 w-8 rounded-full object-cover" :alt="user?.name"
                                         @error="handleImageError" />
                                     <UserCircleIcon v-else class="h-8 w-8 text-gray-400" />
@@ -191,6 +173,7 @@ export default {
                                     <div class="px-4 py-2 border-b">
                                         <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
                                         <p class="text-xs text-gray-500">{{ user.email }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ user.address }}</p>
                                     </div>
                                     <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }">
                                     <a :href="item.href" @click.prevent="navigateTo(item.href)"
@@ -238,13 +221,14 @@ export default {
                 <div class="border-t border-gray-200 pb-3 pt-4">
                     <div class="flex items-center px-4">
                         <div class="flex-shrink-0">
-                            <img v-if="user?.profilePictureUrl" :src="formatImgurUrl(user?.profilePictureUrl)"
+                            <img v-if="userProfilePicture" :src="user.profilePictureUrl"
                                 class="h-10 w-10 rounded-full object-cover" :alt="user.name" />
                             <UserCircleIcon v-else class="h-10 w-10 text-gray-400" />
                         </div>
                         <div class="ml-3">
                             <div class="text-base font-medium text-gray-800">{{ user.name }}</div>
                             <div class="text-sm font-medium text-gray-500">{{ user.email }}</div>
+                            <div class="text-sm font-medium text-gray-500">{{ user.address }}</div>
                         </div>
                     </div>
                     <div class="mt-3 space-y-1">
@@ -258,12 +242,10 @@ export default {
                 </div>
             </template>
             <template v-else>
-                <div class="border-t border-gray-200 py-4 px-4">
-                    <router-link to="/login" class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-base font-medium rounded-md 
-                            text-white bg-indigo-600 hover:bg-indigo-700">
-                        Sign in
-                    </router-link>
-                </div>
+                <router-link to="/login" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md 
+                text-white bg-indigo-600 hover:bg-indigo-700 no-underline !text-white">
+                    Sign in
+                </router-link>
             </template>
         </div>
     </nav>
@@ -273,5 +255,10 @@ export default {
 .router-link-active {
     color: #4f46e5;
     border-bottom: 2px solid #4f46e5;
+}
+
+.router-link-active.bg-indigo-600 {
+    color: white !important;
+    border-bottom: none;
 }
 </style>
