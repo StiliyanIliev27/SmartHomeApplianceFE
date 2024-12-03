@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+.font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.font-poppins {
+    font-family: 'Poppins', sans-serif;
+}
+
+.text-shadow-xl {
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.shadow-glow {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient 15s ease infinite;
+}
+
+.animate-fade-in {
+    animation: fadeIn 1s ease-in;
+}
+
+.animate-fade-in-delay-enhanced {
+    animation: fadeInEnhanced 1.5s ease-in 0.7s backwards;
+}
+
+.animate-slide-up {
+    animation: slideUp 1.2s ease-out;
+}
+
+.animate-text-glow-enhanced {
+    animation: textGlowEnhanced 3s ease-in-out infinite alternate;
+}
+
+.animate-ken-burns {
+    animation: kenBurns 20s ease infinite alternate;
+}
+
+.animate-pulse-slow-enhanced {
+    animation: pulseSlowEnhanced 4s infinite;
+}
+
+.animate-bounce-rotate {
+    animation: bounceRotate 2s infinite;
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-sparkle {
+    animation: sparkle 4s linear infinite;
+}
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.5) rgba(17, 24, 39, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.5);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(139, 92, 246, 0.5);
+    border-radius: 10px;
+}
+
+@keyframes fadeInEnhanced {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes textGlowEnhanced {
+    0% {
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+            0 0 20px rgba(255, 255, 255, 0.3);
+    }
+
+    100% {
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+            0 0 30px rgba(255, 255, 255, 0.6),
+            0 0 40px rgba(255, 255, 255, 0.4);
+    }
+}
+
+@keyframes pulseSlowEnhanced {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+@keyframes bounceRotate {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(10deg);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes sparkle {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    100% {
+        background-position: 200% 200%;
+    }
+}
+
+/* Rest of the existing animations */
+
+.group:hover img {
+    transform: scale(1.05);
+}
+
+@media (max-width: 640px) {
+    .hero-text {
+        font-size: 2.5rem;
+    }
+}
