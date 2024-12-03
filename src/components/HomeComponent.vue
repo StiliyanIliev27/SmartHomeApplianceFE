@@ -1,6 +1,5 @@
 <script>
 import { Dialog, DialogPanel } from '@headlessui/vue'
-import { XMarkIcon } from '@heroicons/vue/24/outline'
 import {
     HomeIcon,
     LightBulbIcon,
@@ -14,6 +13,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import NavBar from './NavBar.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chat'
 import Chatbot from './HomePage/Chatbot.vue'
 
 export default {
@@ -22,7 +22,6 @@ export default {
         NavBar,
         Dialog,
         DialogPanel,
-        XMarkIcon,
         HomeIcon,
         LightBulbIcon,
         CogIcon,
@@ -34,7 +33,8 @@ export default {
     },
     setup() {
         const authStore = useAuthStore()
-        return { authStore }
+        const chatStore = useChatStore()
+        return { authStore, chatStore }
     },
     data() {
         return {
@@ -366,11 +366,7 @@ export default {
                 @sign-out="handleSignOut" />
         </div>
 
-        <Chatbot>
-
-        </Chatbot>
-
-        
+        <Chatbot :user="authStore.user"/>  
 
         <!-- Hero section with enhanced animations -->
         <div class="relative isolate pt-16">

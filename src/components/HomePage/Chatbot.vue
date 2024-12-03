@@ -1,35 +1,49 @@
 <script>
-import { ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
-import { useAuthStore } from '@/stores/auth'
+import { ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { useChatStore } from '@/stores/chat'
 
 export default {
-    setup(){
-        const authStore = useAuthStore(); 
-        return { authStore };
-    },
     data() {
         return {
-            chatBotOpen: false,
-            isChatMinimized: false,
-            chatMessages: [
-                {
-                    text: "Hello! I'm your AI Smart Home Assistant. I'm here to help you with product information, installation guidance, troubleshooting, and any other questions about our smart home solutions. How can I assist you today?",
-                    sender: 'bot',
-                    timestamp: new Date(),
-                    seen: false
-                }
-            ],
             currentMessage: '',
         }
     },
+    props: {
+        user: Object
+    },
     components: {
-        ChatBubbleLeftRightIcon
+        ChatBubbleLeftRightIcon,
+        XMarkIcon
+    },
+    setup() {
+        const chatStore = useChatStore()
+        return { chatStore }
+    },
+    computed: {
+        chatMessages() {
+            return this.chatStore.messages
+        },
+        chatBotOpen: {
+            get() {
+                return this.chatStore.isChatOpen
+            },
+            set(value) {
+                this.chatStore.isChatOpen = value
+            }
+        },
+        isChatMinimized: {
+            get() {
+                return this.chatStore.isChatMinimized
+            },
+            set(value) {
+                this.chatStore.isChatMinimized = value
+            }
+        }
     },
     methods: {
         toggleChatBot() {
-            this.chatBotOpen = !this.chatBotOpen
+            this.chatStore.toggleChat()
             if (this.chatBotOpen) {
-                this.chatMessages.forEach(msg => msg.seen = true)
                 this.$nextTick(() => {
                     const chatContainer = this.$refs.chatContainer
                     if (chatContainer) {
@@ -38,89 +52,48 @@ export default {
                 })
             }
         },
-        minimizeChat() {
-            this.isChatMinimized = !this.isChatMinimized
-        },
-        async sendMessage() {
+        sendMessage() {
             if (!this.currentMessage.trim()) return
 
-            const userMessage = {
-                text: this.currentMessage.trim(),
-                sender: 'user',
-                timestamp: new Date(),
-                seen: true
-            }
+            // Add user message
+            this.chatStore.addMessage({
+                text: this.currentMessage,
+                sender: 'user'
+            })
 
-            this.chatMessages.push(userMessage)
-            const savedMessage = this.currentMessage
+            // Clear input
             this.currentMessage = ''
 
-            try {
-                // Show typing indicator
-                const typingMessage = {
-                    text: 'Typing...',
-                    sender: 'bot',
-                    timestamp: new Date(),
-                    loading: true,
-                    seen: true
+            // Simulate bot response
+            this.chatStore.addMessage({
+                text: "Thank you for your message. I'm processing your request...",
+                sender: 'bot',
+                loading: true
+            })
+
+            // Scroll to bottom
+            this.$nextTick(() => {
+                const chatContainer = this.$refs.chatContainer
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight
                 }
-                this.chatMessages.push(typingMessage)
+            })
 
-                setTimeout(() => {
-                    // Remove typing indicator
-                    this.chatMessages = this.chatMessages.filter(msg => !msg.loading)
-
-                    let botResponse = ''
-                    const lowerCaseMessage = savedMessage.toLowerCase()
-
-                    if (lowerCaseMessage.includes('price') || lowerCaseMessage.includes('cost')) {
-                        botResponse = 'Our smart home packages start from $199.99. Would you like to see our detailed pricing plans?'
-                    } else if (lowerCaseMessage.includes('install') || lowerCaseMessage.includes('setup')) {
-                        botResponse = 'Installation is straightforward and takes about 30 minutes. We also offer professional installation services. Would you like more details?'
-                    } else if (lowerCaseMessage.includes('support') || lowerCaseMessage.includes('help')) {
-                        botResponse = 'Our support team is available 24/7. You can reach us through chat, email, or phone. How can we assist you today?'
-                    } else if (lowerCaseMessage.includes('feature') || lowerCaseMessage.includes('product')) {
-                        botResponse = 'Our smart home system includes features like automated lighting, security cameras, smart thermostats, and more. Which feature would you like to learn more about?'
-                    } else {
-                        botResponse = 'Thank you for your message! How can I help you with our smart home solutions today?'
-                    }
-
-                    this.chatMessages.push({
-                        text: botResponse,
-                        sender: 'bot',
-                        timestamp: new Date(),
-                        seen: this.chatBotOpen
-                    })
-
-                    this.$nextTick(() => {
-                        const chatContainer = this.$refs.chatContainer
-                        if (chatContainer) {
-                            chatContainer.scrollTop = chatContainer.scrollHeight
-                        }
-                    })
-                }, 1000)
-            } catch (error) {
-                console.error('Error sending message:', error)
-                this.chatMessages.push({
-                    text: 'Sorry, there was an error processing your message. Please try again.',
-                    sender: 'bot',
-                    timestamp: new Date(),
-                    seen: this.chatBotOpen
+            // Simulate API call delay
+            setTimeout(() => {
+                // Remove loading message
+                this.chatStore.messages.pop()
+                
+                // Add actual response
+                this.chatStore.addMessage({
+                    text: "I understand you're interested in our smart home solutions. How can I help you today?",
+                    sender: 'bot'
                 })
-            }
-        }
-    },
-    computed: {
-        unreadMessages() {
-            const count = this.chatMessages.filter(msg => !msg.seen && msg.sender === 'bot').length
-            if (count === 0) return ''
-            return count === 1 ? '1 new message' : `${count} new messages`
+            }, 1500)
         }
     }
-
 }
 </script>
-
 <template>
     <!-- AI Chat Bot Button -->
     <button @click="toggleChatBot" class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 
@@ -154,7 +127,7 @@ export default {
                     </div>
                 </div>
                 <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                    <button @click="minimizeChat" class="text-gray-400 hover:text-white transition-colors p-1 cursor-pointer">
+                    <button @click="chatStore.toggleMinimize" class="text-gray-400 hover:text-white transition-colors p-1 cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M20 12H4" />
@@ -181,9 +154,9 @@ export default {
                                 src="https://img.freepik.com/free-vector/chatbot-chat-message-vectorart_78370-4104.jpg" alt="AI"
                                 class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-purple-500/30" />
                             <span v-if="message.sender === 'bot'" class="text-xs text-purple-300 object-cover">HomeCraft AI</span>
-                            <img v-else :src="authStore.user.profilePictureUrl || 'https://e7.pngegg.com/pngimages/24/650/png-clipart-computer-icons-service-avatar-user-guest-house-gaulish-language-purple-service.png' " alt="User"
+                            <img v-else :src="user?.profilePictureUrl || 'https://e7.pngegg.com/pngimages/24/650/png-clipart-computer-icons-service-avatar-user-guest-house-gaulish-language-purple-service.png' " alt="User"
                                 class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-purple-500/30 object-cover" />
-                            <span v-if="message.sender === 'user'" class="text-xs text-purple-300"> {{ authStore.user?.name || 'Guest' }} </span>
+                            <span v-if="message.sender === 'user'" class="text-xs text-purple-300"> {{ user?.name || 'Guest' }} </span>
                         </div>
                         <p :class="{ 'animate-pulse': message.loading }" class="leading-relaxed text-xs sm:text-sm break-words">
                             {{ message.text }}

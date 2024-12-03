@@ -1,15 +1,19 @@
 <script>
 import { useAuthStore } from '@/stores/auth'
 import NavBar from '../NavBar.vue'
+import Chatbot from '../HomePage/Chatbot.vue'
+import { useChatStore } from '@/stores/chat'
 
 export default {
     name: 'LoginComponent',
     components: {
-        NavBar
+        NavBar,
+        Chatbot
     },
     setup() {
         const authStore = useAuthStore()
-        return { authStore }
+        const chatStore = useChatStore()
+        return { authStore, chatStore }
     },
     data() {
         return {
@@ -95,6 +99,7 @@ export default {
     <div class="absolute top-0 left-0 w-full z-10">
         <NavBar />
     </div>
+    <Chatbot :user="authStore.user"/>
     <div
         class="flex min-h-screen flex-1 flex-col justify-center bg-gradient-to-br from-indigo-50 to-white px-4 sm:px-6 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-md animate-fade-in">
