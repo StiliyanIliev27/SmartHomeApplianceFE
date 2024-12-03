@@ -4,6 +4,7 @@ import LoginComponent from '../components/Authentication/LoginComponent.vue'
 import RegisterComponent from '@/components/Authentication/RegisterComponent.vue';
 import EmailConfirmationPending from '@/components/Email/EmailConfirmationPending.vue'
 import EmailConfirmationSuccess from '@/components/Email/EmailConfirmationSuccess.vue'
+import ShopComponent from '@/components/Shop/ShopComponent.vue'
 
 const routes = [
   {
@@ -30,7 +31,12 @@ const routes = [
     path: '/confirm-email',
     name: 'EmailConfirmationSuccess',
     component: EmailConfirmationSuccess
-  }
+  },
+  {
+    path: '/shop',
+    name: 'Shop',
+    component: ShopComponent
+  },
 ];
 
 const router = createRouter({

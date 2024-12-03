@@ -46,13 +46,13 @@ export default {
             notifications: 3,
             guestNavigation: [
                 { name: 'Home', href: '/', icon: HomeIcon },
-                { name: 'Products', href: '/products', icon: ShoppingCartIcon },
+                { name: 'Products', href: '/shop', icon: ShoppingCartIcon },
                 { name: 'About', href: '/about', icon: InformationCircleIcon },
-                { name: 'Contact', href: '/contact', icon: PhoneIcon }
+                { name: 'Support', href: '/support', icon: PhoneIcon }
             ],
             authenticatedNavigation: [
                 { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-                { name: 'My Orders', href: '/orders', icon: ShoppingBagIcon },
+                { name: 'Products', href: '/shop', icon: ShoppingBagIcon },
                 { name: 'Wishlist', href: '/wishlist', icon: HeartIcon },
                 { name: 'Cart', href: '/cart', icon: ShoppingCartIcon, badge: '3' }
             ],
@@ -103,6 +103,7 @@ export default {
         userNavigation() {
             return [
                 { name: 'Your Profile', href: '/profile', icon: UserCircleIcon },
+                { name: 'My Orders', href: '/my-orders', icon: ShoppingBagIcon },
                 { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
                 { name: 'Sign out', href: '#', icon: ArrowRightStartOnRectangleIcon, actions: this.handleSignOut }
             ]
@@ -228,7 +229,6 @@ export default {
                         <div class="ml-3">
                             <div class="text-base font-medium text-gray-800">{{ user.name }}</div>
                             <div class="text-sm font-medium text-gray-500">{{ user.email }}</div>
-                            <div class="text-sm font-medium text-gray-500">{{ user.address }}</div>
                         </div>
                     </div>
                     <div class="mt-3 space-y-1">
