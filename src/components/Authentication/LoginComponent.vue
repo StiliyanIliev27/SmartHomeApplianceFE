@@ -1,8 +1,9 @@
 <script>
-import { useAuthStore } from '@/stores/auth'
 import NavBar from '../NavBar.vue'
 import Chatbot from '../HomePage/Chatbot.vue'
+import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
+import { authApi } from '@/api'
 
 export default {
     name: 'LoginComponent',
@@ -11,9 +12,7 @@ export default {
         Chatbot
     },
     setup() {
-        const authStore = useAuthStore()
-        const chatStore = useChatStore()
-        return { authStore, chatStore }
+        return { authStore: useAuthStore(), chatStore: useChatStore() }
     },
     data() {
         return {
@@ -24,11 +23,12 @@ export default {
                 password: ''
             },
             error: null,
+            message: null,
             validFields: {
                 email: true,
-                password: true // Added password validation
+                password: true
             },
-            rememberMe: false // Added remember me state
+            rememberMe: false
         }
     },
     methods: {
@@ -42,7 +42,6 @@ export default {
             return true
         },
         validatePassword() {
-            // Basic password validation
             if (!this.form.password || this.form.password.length < 6) {
                 this.validFields.password = false
                 return false
@@ -51,10 +50,8 @@ export default {
             return true
         },
         async handleSubmit() {
-            // Clear previous errors
             this.error = null
             
-            // Validate both fields
             const isEmailValid = this.validateEmail()
             const isPasswordValid = this.validatePassword()
             
@@ -87,9 +84,19 @@ export default {
         async handleForgotPassword() {
             if (!this.form.email) {
                 this.error = 'Please enter your email address'
-                return
+                return;
             }
-            // Add forgot password logic here
+            try {
+                const response = await authApi.forgotPassword(this.form.email);
+                if(response.data.statusCode === 200){
+                    this.error = null; 
+                    this.message = 'The password reset email has been sent successfully.';
+                } else{
+                    this.error = response.data.errorMessages[0];
+                }
+            } catch (error) {
+                this.error = error.response?.data.errorMessages[0] || 'Failed to send reset email'
+            }
         }
     }
 }
@@ -103,7 +110,7 @@ export default {
     <div
         class="flex min-h-screen flex-1 flex-col justify-center bg-gradient-to-br from-indigo-50 to-white px-4 sm:px-6 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-md animate-fade-in">
-            <img class="mx-auto h-12 w-auto" src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
+            <img class="mx-auto h-16 w-auto" src="/smart-home-logo.png"
                 alt="Your Company" />
             <h2
                 class="mt-6 text-center text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl animate-slide-down">
@@ -116,6 +123,10 @@ export default {
                 <form class="space-y-6" @submit.prevent="handleSubmit">
                     <div v-if="error" class="rounded-md bg-red-50 p-4">
                         <div class="text-sm text-red-700">{{ error }}</div>
+                    </div>
+
+                    <div v-if="message" class="rounded-md bg-green-50 p-4">
+                        <div class="text-sm text-green-700">{{ message }}</div>
                     </div>
 
                     <div class="relative">

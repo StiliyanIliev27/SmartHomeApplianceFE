@@ -4,15 +4,14 @@ import Chatbot from '../HomePage/Chatbot.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 
+
 export default {
     components: {
         NavBar,
         Chatbot
     },
     setup(){
-        const authStore = useAuthStore();
-        const chatStore = useChatStore();
-        return { authStore, chatStore };
+        return { authStore: useAuthStore(), chatStore: useChatStore() };
     },
     data() {
         return {
@@ -44,10 +43,12 @@ export default {
     },
     methods: {
         validateFirstName() {
-            this.validFields.firstName = this.form.firstName.length > 0;
+            this.validFields.firstName = this.form.firstName.length > 2;
+            this.errors.firstName = 'First name must be at least 3 characters long';
         },
         validateLastName() {
-            this.validFields.lastName = this.form.lastName.length > 0;
+            this.validFields.lastName = this.form.lastName.length > 2;
+            this.errors.lastName = 'Last name must be at least 3 characters long';
         },
         validateEmail() {
             this.errors.email = '';
@@ -102,7 +103,6 @@ export default {
             this.isLoading = true;
 
             try {
-                // Създаваме обект с данните вместо FormData
                 const userData = {
                     firstName: this.form.firstName,
                     lastName: this.form.lastName,
@@ -121,28 +121,21 @@ export default {
                     formData.append('profilePicture', userData.profilePicture);
                 }
 
-                const response = await fetch('https://localhost:7200/api/auth/register', {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await this.authStore.registerAsync(formData);
 
                 if (response.status === 400 || response.status === 500) {
                     const errorData = await response.json();
                     throw new Error(errorData.errorMessages[0] || 'Registration failed');
                 }
 
-                const data = await response.json();
+                const data = response.data;
                 console.log('Registration successful:', data);
 
-                // Запазваме имейла за страницата за потвърждение
                 localStorage.setItem('pendingConfirmationEmail', this.form.email);
 
-                // Пренасочване към страницата за изчакване на потвърждение
                 this.$router.push('/confirm-email-pending');
             } catch (error) {
                 console.error('Registration error:', error);
-                // Тук можете да добавите показване на грешката на потребителя
-                // Например чрез добавяне на ново поле в data() за общи грешки
                 this.errors.general = error.message;
             } finally {
                 this.isLoading = false;
@@ -165,7 +158,7 @@ export default {
     <div
         class="flex min-h-screen flex-1 flex-col justify-center bg-gradient-to-br from-indigo-50 to-white px-4 sm:px-6 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-md animate-fade-in">
-            <img class="mx-auto h-12 w-auto" src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
+            <img class="mx-auto h-16 w-auto" src="/smart-home-logo.png"
                 alt="Your Company" />
             <h2
                 class="mt-6 text-center text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl animate-slide-down">
@@ -178,7 +171,7 @@ export default {
                 <form class="space-y-6" @submit.prevent="handleSubmit">
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div class="relative">
-                            <label for="firstName" class="block text-sm font-medium text-gray-700">First name</label>
+                            <label for="firstName" class="block text-sm font-medium text-gray-700">First name <span class="text-red-500">*</span></label>
                             <div class="mt-1">
                                 <input v-model="form.firstName" @blur="validateFirstName" id="firstName"
                                     name="firstName" type="text" placeholder="Enter your first name" required
@@ -193,7 +186,7 @@ export default {
                         </div>
 
                         <div class="relative">
-                            <label for="lastName" class="block text-sm font-medium text-gray-700">Last name</label>
+                            <label for="lastName" class="block text-sm font-medium text-gray-700">Last name <span class="text-red-500">*</span></label>
                             <div class="mt-1">
                                 <input v-model="form.lastName" @blur="validateLastName" id="lastName" name="lastName"
                                     type="text" placeholder="Enter your last name" required
@@ -209,7 +202,7 @@ export default {
                     </div>
 
                     <div class="relative">
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email address <span class="text-red-500">*</span></label>
                         <div class="mt-1">
                             <input v-model="form.email" @blur="validateEmail" id="email" name="email" type="email"
                                 placeholder="Enter your email address" autocomplete="email" required
@@ -225,7 +218,7 @@ export default {
                     </div>
 
                     <div class="relative">
-                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password <span class="text-red-500">*</span></label>
                         <div class="mt-1 relative">
                             <input v-model="form.password" @blur="validatePassword" id="password" name="password"
                                 placeholder="Enter your password" :type="showPassword ? 'text' : 'password'" required
@@ -262,7 +255,7 @@ export default {
 
                     <div class="relative">
                         <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm
-                            Password</label>
+                            Password <span class="text-red-500">*</span></label>
                         <div class="mt-1 relative">
                             <input v-model="form.confirmPassword" @blur="validateConfirmPassword" id="confirmPassword"
                                 name="confirmPassword" placeholder="Confirm your password"

@@ -5,6 +5,7 @@ import RegisterComponent from '@/components/Authentication/RegisterComponent.vue
 import EmailConfirmationPending from '@/components/Email/EmailConfirmationPending.vue'
 import EmailConfirmationSuccess from '@/components/Email/EmailConfirmationSuccess.vue'
 import ShopComponent from '@/components/Shop/ShopComponent.vue'
+import ResetPassword from '@/components/Authentication/ResetPassword.vue'
 
 const routes = [
   {
@@ -31,6 +32,11 @@ const routes = [
     path: '/confirm-email',
     name: 'EmailConfirmationSuccess',
     component: EmailConfirmationSuccess
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword
   },
   {
     path: '/shop',

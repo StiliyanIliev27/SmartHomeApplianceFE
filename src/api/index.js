@@ -1,9 +1,9 @@
+import { data } from 'autoprefixer'
 import axios from 'axios'
 
 const api = axios.create({
     baseURL: 'https://localhost:7200/api',
     headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json'
     }
 })
@@ -20,6 +20,8 @@ export const authApi = {
     login: (credentials) => api.post('/auth/login', credentials),
     register: (userData) => api.post('/auth/register', userData),
     logout: () => api.post('/auth/logout'),
+    forgotPassword: (email) => api.get('/auth/forgot-password', { params: { email } }),
+    resetPassword: (newPassword, userId) => api.patch('/auth/reset-password', { newPassword, userId }),
     getUser: () => api.get('/auth/user')
 }
 

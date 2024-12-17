@@ -11,6 +11,18 @@ export const useAuthStore = defineStore('auth', {
     }),
     
     actions: {
+        async registerAsync(userData){
+            try {
+                this.loading = true;
+                this.error = null;
+
+                const response = await authApi.register(userData);
+                return response;
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Something went wrong';
+                throw error;
+            }
+        },
         async login(credentials) {
             try {
                 this.loading = true
@@ -44,7 +56,7 @@ export const useAuthStore = defineStore('auth', {
             try {
                 await authApi.logout()
             } catch (error) {
-                console.error('Грешка при изход:', error)
+                console.error('Logout error:', error)
             } finally {
                 this.user = null
                 this.token = null
