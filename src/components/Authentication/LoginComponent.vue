@@ -1,9 +1,9 @@
 <script>
 import NavBar from '../NavBar.vue'
 import Chatbot from '../HomePage/Chatbot.vue'
-import { useAuthStore } from '@/stores/auth'
-import { useChatStore } from '@/stores/chat'
-import { authApi } from '@/api'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useChatStore } from '@/stores/useChatStore'
+import { authApi } from '@/api/authService'
 
 export default {
     name: 'LoginComponent',

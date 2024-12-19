@@ -1,9 +1,9 @@
 <script>
-import { useAuthStore } from '@/stores/auth'
-import { useChatStore } from '@/stores/chat'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useChatStore } from '@/stores/useChatStore'
 import NavBar from '@/components/NavBar.vue'
 import Chatbot from '@/components/HomePage/Chatbot.vue'
-import { authApi } from '@/api'
+import { authApi } from '@/api/authService'
 
 export default {
     setup() {

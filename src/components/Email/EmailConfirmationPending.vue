@@ -4,30 +4,6 @@ export default {
         return {
             email: localStorage.getItem('pendingConfirmationEmail') || ''
         }
-    },
-    mounted() {
-        // Start polling for confirmation status
-        this.checkConfirmationStatus();
-    },
-    methods: {
-        async checkConfirmationStatus() {
-            try {
-                const response = await fetch(`/auth/check-confirmation?email=${this.email}`);
-                const data = await response.json();
-                
-                if (data.isConfirmed) {
-                    // Clear stored email
-                    localStorage.removeItem('pendingConfirmationEmail');
-                    // Redirect to home page
-                    this.$router.push('/');
-                } else {
-                    // Check again in 5 seconds
-                    setTimeout(() => this.checkConfirmationStatus(), 5000);
-                }
-            } catch (error) {
-                console.error('Error checking confirmation status:', error);
-            }
-        }
     }
 }
 </script>

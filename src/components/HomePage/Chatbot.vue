@@ -1,6 +1,6 @@
 <script>
 import { ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/vue/24/outline'
-import { useChatStore } from '@/stores/chat'
+import { useChatStore } from '@/stores/useChatStore'
 
 export default {
     data() {
@@ -16,8 +16,7 @@ export default {
         XMarkIcon
     },
     setup() {
-        const chatStore = useChatStore()
-        return { chatStore }
+        return { chatStore: useChatStore() }
     },
     computed: {
         chatMessages() {

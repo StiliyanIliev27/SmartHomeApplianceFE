@@ -1,8 +1,8 @@
 <script>
 import NavBar from '../NavBar.vue'
 import Chatbot from '../HomePage/Chatbot.vue'
-import { useAuthStore } from '@/stores/auth'
-import { useChatStore } from '@/stores/chat'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useChatStore } from '@/stores/useChatStore'
 
 
 export default {

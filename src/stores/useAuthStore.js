@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { authApi } from '@/api'
+import { authApi } from '@/api/authService'
+import { cartApi } from '@/api/cartService'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -30,17 +31,34 @@ export const useAuthStore = defineStore('auth', {
                 
                 const response = await authApi.login(credentials)
                 const { user, token } = response.data.result
+
+                this.token = token
+                localStorage.setItem('token', token)
                 
+                try{
+                    const cartResponse = await cartApi.getCart()
+                    let cartProducts = []
+                    if(cartResponse.status === 200) {
+                        cartProducts = cartResponse.data.result.cartProducts
+                    }
+                } catch (error) {
+                    if(error.response?.status === 404) {
+                        console.log('Cart not found')
+                    } else {
+                        console.error('Error fetching cart items:', error)
+                    }
+                }
+
                 this.user = {
                     id: user.id,
                     email: user.email,
                     name: `${user.firstName} ${user.lastName}`,
-                    profilePictureUrl: user.profilePictureUrl
+                    profilePictureUrl: user.profilePictureUrl,
+                    cartProducts: [...cartProducts]
                 }
-                this.token = token
-                this.isAuthenticated = true
                 
-                localStorage.setItem('token', token)
+                this.isAuthenticated = true 
+
                 localStorage.setItem('user', JSON.stringify(user))
                 
                 return true

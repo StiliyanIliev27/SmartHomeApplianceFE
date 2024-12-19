@@ -22,6 +22,7 @@ export const authApi = {
     logout: () => api.post('/auth/logout'),
     forgotPassword: (email) => api.get('/auth/forgot-password', { params: { email } }),
     resetPassword: (newPassword, userId) => api.patch('/auth/reset-password', { newPassword, userId }),
+    confirmEmail: (token, userId) => api.get('/auth/confirm-email', { params: { token, userId } }),
     getUser: () => api.get('/auth/user')
 }
 

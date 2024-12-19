@@ -2,8 +2,8 @@
 import NavBar from '../NavBar.vue'
 import Footer from '../Footer.vue'
 import Chatbot from '../HomePage/Chatbot.vue'
-import { useAuthStore } from '@/stores/auth'
-import { useChatStore } from '@/stores/chat'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useChatStore } from '@/stores/useChatStore'
 import axios from 'axios'
 import { debounce } from 'lodash';
 
@@ -220,7 +220,7 @@ export default {
     <!-- Navbar -->
     <div class="fixed top-0 w-full z-50 transition-all duration-300"
       :class="{ 'bg-transparent': !scrolled, 'shadow-lg backdrop-blur-md bg-white/90': scrolled }">
-      <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" :cart-items="cartItems"
+      <NavBar :is-authenticated="isAuthenticated" :user="authStore.user"
         @sign-out="handleSignOut" />
     </div>
 

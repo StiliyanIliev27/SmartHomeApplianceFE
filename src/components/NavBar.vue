@@ -15,6 +15,7 @@ import {
     HeartIcon,
     InformationCircleIcon
 } from '@heroicons/vue/24/outline'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 export default {
     name: 'NavBar',
@@ -37,8 +38,7 @@ export default {
     },
     props: {
         isAuthenticated: Boolean,
-        user: Object,
-        cartItems: Array
+        user: Object
     },
     data() {
         return {
@@ -136,9 +136,9 @@ export default {
                             active-class="text-indigo-600 border-b-2 border-indigo-600">
                             <component :is="item.icon" class="h-5 w-5 mr-1.5" />
                             {{ item.name }}
-                            <span v-if="item.badge"
+                            <span v-if="item.name === 'Cart'"
                                 class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                {{ item.badge }}
+                                {{ user.cartProducts.length }}
                             </span>
                         </router-link>
                     </div>

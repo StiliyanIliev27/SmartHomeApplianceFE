@@ -12,11 +12,13 @@ import {
     TruckIcon
 } from '@heroicons/vue/24/outline'
 import NavBar from './NavBar.vue'
-import { useAuthStore } from '@/stores/auth'
-import { useChatStore } from '@/stores/chat'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useChatStore } from '@/stores/useChatStore'
 import Chatbot from './HomePage/Chatbot.vue'
 import SpecialOfferBanner from './HomePage/SpecialOfferBanner.vue'
 import Footer from './Footer.vue'
+import { cartApi } from '@/api/cartService'
+import { productApi } from '@/api/productService'
 
 export default {
     name: 'LandingPage',
@@ -36,14 +38,12 @@ export default {
         Footer
     },
     setup() {
-        const authStore = useAuthStore()
-        const chatStore = useChatStore()
-        return { authStore, chatStore }
+        return { authStore: useAuthStore(), chatStore: useChatStore() }
     },
     data() {
         return {
             mobileMenuOpen: false,
-            cartItems: [],
+            latestProducts: [],
             features: [
                 {
                     name: 'Smart Lighting',
@@ -201,6 +201,14 @@ export default {
         }
     },
     methods: {
+        async getLatestThreeProducts() {
+            try {
+                const response = await productApi.getLatestThreeProducts();
+                this.latestProducts = [...response.data.result];
+            } catch (error) {
+                console.error('Error fetching latest products:', error);
+            }
+        },
         closeMobileMenu() {
             this.mobileMenuOpen = false
         },
@@ -243,33 +251,48 @@ export default {
         handleScroll() { // Add handleScroll method
             this.scrolled = window.scrollY > 0
         },
-        addToCart(product) {
+        async addToCart(product) {
             if (!this.isAuthenticated) {
                 this.goToLogin()
                 return
             }
 
             if (!product.id) {
-                product.id = Math.random().toString(36).substr(2, 9)
+                product.id = crypto.randomUUID()
             }
 
-            const existingProduct = this.cartItems.find(item => item.id === product.id)
+            const userProducts = this.authStore.user.cartProducts;
+            const existingProduct = userProducts.find(item => item.productId === product.id)
             if (existingProduct) {
                 existingProduct.quantity = (existingProduct.quantity || 1) + 1
             } else {
-                this.cartItems.push({ ...product, quantity: 1 })
+                userProducts.push({ ...existingProduct, quantity: 1 })
             }
 
-            // Show success notification with enhanced styling
-            this.$notify({
-                title: 'Added to Cart',
-                text: `${product.name} has been added to your cart`,
-                type: 'success',
-                duration: 3000,
-                position: 'top-right',
-                showClose: true,
-                customClass: 'custom-notification'
-            })
+            const response = await cartApi.addToCart(product.id, existingProduct.quantity);
+
+            if (response.data.statusCode !== 200) {
+                this.$notify({
+                    title: 'Error',
+                    text: 'Failed to add item to cart',
+                    type: 'error',
+                    duration: 3000,
+                    position: 'top-right',
+                    showClose: true,
+                    customClass: 'custom-notification-error'
+                })
+            } else {
+                // Show success notification with enhanced styling
+                this.$notify({
+                    title: 'Added to Cart',
+                    text: `${product.name} has been added to your cart`,
+                    type: 'success',
+                    duration: 3000,
+                    position: 'top-right',
+                    showClose: true,
+                    customClass: 'custom-notification'
+                })
+            }
         },
         removeFromCart(productId) {
             const index = this.cartItems.findIndex(item => item.id === productId)
@@ -368,7 +391,10 @@ export default {
             }
         }
     },
-    mounted() {
+    async created() {
+        await this.getLatestThreeProducts();
+    },
+    async mounted() {
         this.updateAuthStatus()
 
         // Watch for auth store changes
@@ -401,8 +427,7 @@ export default {
         <!-- Fixed Header section -->
         <div class="fixed top-0 w-full z-50 transition-all duration-300"
             :class="{ 'bg-transparent': !scrolled, 'shadow-lg backdrop-blur-md bg-white/10': scrolled }">
-            <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" :cart-items="cartItems"
-                @sign-out="handleSignOut" />
+            <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" @sign-out="handleSignOut" />
         </div>
 
         <Chatbot :user="authStore.user" />
@@ -562,12 +587,12 @@ export default {
                 </h2>
             </div>
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                <div v-for="product in popularProducts" :key="product.name" class="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-xl 
+                <div v-for="product in latestProducts" :key="product.name" class="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-xl 
                         p-4 sm:p-6 transform hover:scale-105 transition-all duration-300 
                         border border-white/10 hover:border-purple-500/50 
                         hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] cursor-pointer">
                     <div class="relative overflow-hidden rounded-lg">
-                        <img :src="product.image" :alt="product.name" class="w-full h-40 sm:h-48 object-cover rounded-lg transform 
+                        <img :src="product.imageUrl" :alt="product.name" class="w-full h-40 sm:h-48 object-cover rounded-lg transform 
                                 group-hover:scale-110 transition-transform duration-500 
                                 filter group-hover:brightness-110" />
                         <div class="absolute inset-0 bg-gradient-to-t from-purple-900/80 
@@ -589,14 +614,14 @@ export default {
                     <p class="mt-2 text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-400 
                             to-teal-400 bg-clip-text text-transparent group-hover:scale-105 
                             transition-transform">{{ product.price }}</p>
-                    <button @click="addToCart(product)" :disabled="!product.inStock" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 
+                    <button @click="addToCart(product)" :disabled="!product.stockQuantity" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 
                             text-white px-4 py-2 rounded-lg hover:from-purple-500 
                             hover:to-pink-500 transition-all duration-300 disabled:opacity-50 
                             disabled:hover:from-purple-600 disabled:hover:to-pink-600 
                             transform hover:scale-105 text-sm sm:text-base cursor-pointer
                             disabled:cursor-not-allowed shadow-lg hover:shadow-xl
                             group-hover:translate-y-1">
-                        {{ product.inStock ? 'Add to Cart' : 'Out of Stock' }}
+                        {{ product.stockQuantity > 0 ? 'Add to Cart' : 'Out of Stock' }}
                     </button>
                 </div>
             </div>
