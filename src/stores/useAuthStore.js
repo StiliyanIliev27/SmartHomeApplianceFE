@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { authApi } from '@/api/authService'
-import { cartApi } from '@/api/cartService'
+import { authApi } from '@/api/authApi'
+import { cartApi } from '@/api/cartApi'
+import { jwtDecode } from 'jwt-decode'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -10,57 +11,48 @@ export const useAuthStore = defineStore('auth', {
         loading: false,
         error: null
     }),
-    
-    actions: {
-        async registerAsync(userData){
-            try {
-                this.loading = true;
-                this.error = null;
 
-                const response = await authApi.register(userData);
-                return response;
+    actions: {
+        async registerAsync(userData) {
+            this.loading = true
+            this.error = null
+
+            try {
+                return await authApi.register(userData)
             } catch (error) {
-                this.error = error.response?.data?.message || 'Something went wrong';
-                throw error;
+                this.error = error.response?.data?.message || 'Something went wrong'
+                throw error
+            } finally {
+                this.loading = false
             }
         },
-        async login(credentials) {
-            try {
-                this.loading = true
-                this.error = null
-                
-                const response = await authApi.login(credentials)
-                const { user, token } = response.data.result
 
-                this.token = token
+        async login(credentials) {
+            this.loading = true
+            this.error = null
+
+            try {
+                const { data: { result: { user, token } } } = await authApi.login(credentials)
+
+                const decodedToken = jwtDecode(token)
+                const tokenExpiration = decodedToken.exp * 1000; // Времето на изтичане в милисекунди
+
+                // Запазване на токена и времето на изтичане
                 localStorage.setItem('token', token)
-                
-                try{
-                    const cartResponse = await cartApi.getCart()
-                    let cartProducts = []
-                    if(cartResponse.status === 200) {
-                        cartProducts = cartResponse.data.result.cartProducts
-                    }
-                } catch (error) {
-                    if(error.response?.status === 404) {
-                        console.log('Cart not found')
-                    } else {
-                        console.error('Error fetching cart items:', error)
-                    }
-                }
+                localStorage.setItem('tokenExpiration', tokenExpiration)
+
+                const cartProducts = await this.fetchCartProducts()
 
                 this.user = {
                     id: user.id,
                     email: user.email,
                     name: `${user.firstName} ${user.lastName}`,
                     profilePictureUrl: user.profilePictureUrl,
-                    cartProducts: [...cartProducts]
+                    cartProducts: cartProducts ? cartProducts : []
                 }
-                
-                this.isAuthenticated = true 
 
-                localStorage.setItem('user', JSON.stringify(user))
-                
+                this.isAuthenticated = true
+                localStorage.setItem('user', JSON.stringify(this.user))
                 return true
             } catch (error) {
                 this.error = error.response?.data?.message || 'Something went wrong'
@@ -70,39 +62,52 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
-        async logout() {
+        async fetchCartProducts() {
             try {
-                await authApi.logout()
+                const { status, data } = await cartApi.getCart()
+                return status === 200 ? data.result.cartProducts : []
             } catch (error) {
-                console.error('Logout error:', error)
-            } finally {
-                this.user = null
-                this.token = null
-                this.isAuthenticated = false
-                localStorage.removeItem('token')
-                localStorage.removeItem('user')
+                if (error.response?.status === 404) {
+                    console.log('Cart not found')
+                } else {
+                    console.error('Error fetching cart items:', error)
+                }
+                return []
             }
         },
 
         async initializeFromStorage() {
             const token = localStorage.getItem('token')
+            const tokenExpiration = localStorage.getItem('tokenExpiration')
             const user = JSON.parse(localStorage.getItem('user'))
-            
-            if (token && user) {
-                try {
-                    const response = await authApi.getUser()
-                    this.user = {
-                        id: response.data.id,
-                        email: response.data.email,
-                        name: `${response.data.firstName} ${response.data.lastName}`,
-                        profilePictureUrl: response.data.profilePictureUrl
-                    }
-                    this.token = token
-                    this.isAuthenticated = true
-                } catch (error) {
-                    this.logout()
-                }
+            const currentTime = new Date().getTime();
+
+            // Проверка за валидност на токена
+            if (token && tokenExpiration && currentTime < tokenExpiration) {
+                this.token = token
+                this.isAuthenticated = true
+                this.user = user
+                // Можете да извлечете потребителските данни от API, ако е необходимо
+            } else {
+                this.logout(); // Изтриване на токена, ако е изтекъл
             }
+        },
+
+        async logout() {
+            // Изтриване на токена и потребителските данни
+            localStorage.removeItem('token')
+            localStorage.removeItem('tokenExpiration')
+            this.user = null
+            this.isAuthenticated = false
+        },
+
+        resetState() {
+            this.user = null
+            this.token = null
+            this.isAuthenticated = false
+            localStorage.removeItem('token')
+            localStorage.removeItem('tokenExpiration')
+            localStorage.removeItem('user')
         }
     }
 })

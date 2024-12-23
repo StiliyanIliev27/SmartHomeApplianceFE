@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useChatStore } from '@/stores/useChatStore'
 import NavBar from '@/components/NavBar.vue'
 import Chatbot from '@/components/HomePage/Chatbot.vue'
-import { authApi } from '@/api/authService'
+import { authApi } from '@/api/authApi'
 
 export default {
     setup() {

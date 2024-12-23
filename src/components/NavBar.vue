@@ -13,9 +13,10 @@ import {
     ArrowRightStartOnRectangleIcon,
     ShoppingBagIcon,
     HeartIcon,
-    InformationCircleIcon
+    InformationCircleIcon,
+    XMarkIcon as XIcon
 } from '@heroicons/vue/24/outline'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { cartService } from '@/services/cartService'
 
 export default {
     name: 'NavBar',
@@ -34,7 +35,8 @@ export default {
         ArrowRightStartOnRectangleIcon,
         ShoppingBagIcon,
         HeartIcon,
-        InformationCircleIcon
+        InformationCircleIcon,
+        XIcon
     },
     props: {
         isAuthenticated: Boolean,
@@ -44,6 +46,8 @@ export default {
         return {
             mobileMenuOpen: false,
             notifications: 3,
+            showCartPreview: false,
+            cartHoverTimeout: null,
             guestNavigation: [
                 { name: 'Home', href: '/', icon: HomeIcon },
                 { name: 'Products', href: '/shop', icon: ShoppingCartIcon },
@@ -59,6 +63,35 @@ export default {
         }
     },
     methods: {
+        async updateQuantity(productId, newQuantity, event) {
+           if (newQuantity < 1) return;
+           
+           try {
+               // Prevent default navigation
+               event.preventDefault();
+               event.stopPropagation();
+               
+               // Emit update event
+               this.$emit('update-cart', productId, newQuantity);
+           } catch (error) {
+               console.error('Error updating quantity:', error);
+           }
+       },
+       incrementQuantity(productId, currentQuantity, event) {
+           event.preventDefault();
+           event.stopPropagation();
+           this.updateQuantity(productId, currentQuantity + 1, event);
+       },     
+       decrementQuantity(productId, currentQuantity, event) {
+           event.preventDefault(); 
+           event.stopPropagation();
+           if (currentQuantity > 1) {
+               this.updateQuantity(productId, currentQuantity - 1, event);
+           }
+           else if(currentQuantity === 1){
+                cartService.removeFromCart(productId);
+           }
+       },
         handleSignOut() {
             this.$emit('sign-out')
         },
@@ -79,6 +112,17 @@ export default {
             // Заменяме със стандартна икона при грешка при зареждане на изображението
             event.target.style.display = 'none';
             // Можете да добавите допълнителна логика тук
+        },
+        showCart() {
+            if (this.cartHoverTimeout) {
+                clearTimeout(this.cartHoverTimeout);
+            }
+            this.showCartPreview = true;
+        },
+        hideCart() {
+            this.cartHoverTimeout = setTimeout(() => {
+                this.showCartPreview = false;
+            }, 300); // Small delay to prevent flickering
         }
     },
     watch: {
@@ -118,6 +162,11 @@ export default {
     },
     mounted() {
         console.log('User data in NavBar:', this.user);
+    },
+    beforeDestroy() {
+        if (this.cartHoverTimeout) {
+            clearTimeout(this.cartHoverTimeout);
+        }
     }
 }
 </script>
@@ -132,14 +181,74 @@ export default {
                     </div>
                     <div class="hidden md:ml-6 md:flex md:space-x-8">
                         <router-link v-for="item in navigation" :key="item.name" :to="item.href"
-                            class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-indigo-600"
-                            active-class="text-indigo-600 border-b-2 border-indigo-600">
+                            class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-indigo-600 relative"
+                            active-class="text-indigo-600 border-b-2 border-indigo-600"
+                            @mouseenter="item.name === 'Cart' ? showCart() : null"
+                            @mouseleave="item.name === 'Cart' ? hideCart() : null">
                             <component :is="item.icon" class="h-5 w-5 mr-1.5" />
                             {{ item.name }}
-                            <span v-if="item.name === 'Cart'"
+                            <span v-if="item.name === 'Cart' && user?.cartProducts?.length"
                                 class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                 {{ user.cartProducts.length }}
                             </span>
+
+                            <!-- Cart Preview Popup -->
+                            <div v-if="item.name === 'Cart' && showCartPreview && user?.cartProducts?.length > 0"
+                                class="absolute right-0 top-full mt-1 w-72 bg-white rounded-lg shadow-lg border border-gray-100 z-50 transform transition-all duration-200 ease-in-out"
+                                @mouseenter="showCart()"
+                                @mouseleave="hideCart()">
+                                <div class="p-4">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h3 class="text-base font-semibold text-gray-900">Cart Preview</h3>
+                                        <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+                                            {{ user.cartProducts.length }}
+                                        </span>
+                                    </div>
+                                    <div class="max-h-48 overflow-y-auto custom-scrollbar">
+                                        <div v-for="product in user.cartProducts.slice(0,3)" :key="product.productId"
+                                            class="flex items-center py-2 border-b border-gray-50 last:border-b-0 group hover:bg-gray-50 rounded-md px-2 transition-all duration-150">
+                                            <img :src="product.imageUrl || '/placeholder.png'"
+                                                class="w-12 h-12 object-cover rounded-md shadow-sm"
+                                                :alt="product.name">
+                                            <div class="ml-3 flex-grow">
+                                                <h4 class="text-xs font-medium text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">{{ product.productName }}</h4>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <div class="flex items-center space-x-2">
+                                                        <button @click="decrementQuantity(product.productId, product.quantity, $event)" 
+                                                                class="text-xs w-5 h-5 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600">
+                                                            -
+                                                        </button>
+                                                        <span class="text-xs text-gray-500">{{ product.quantity }}</span>
+                                                        <button @click="incrementQuantity(product.productId, product.quantity, $event)"
+                                                                class="text-xs w-5 h-5 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 text-gray-600">
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                    <span class="text-xs font-medium text-indigo-600">${{ product.price }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 pt-2 border-t border-gray-100">
+                                        <div class="flex justify-between items-center mb-3">
+                                            <span class="text-sm font-medium text-gray-900">Total</span>
+                                            <span class="text-sm font-bold text-indigo-600">
+                                                ${{ user.cartProducts.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2) }}
+                                            </span>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <router-link to="/cart"
+                                                class="block w-full text-center px-3 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors">
+                                                View Cart
+                                            </router-link>
+                                            <router-link to="/checkout"
+                                                class="block w-full text-center px-3 py-2 bg-gray-50 text-gray-700 text-sm rounded-md hover:bg-gray-100 transition-colors">
+                                                Checkout
+                                            </router-link>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </router-link>
                     </div>
                 </div>
@@ -262,5 +371,30 @@ export default {
 .router-link-active.bg-indigo-600 {
     color: white !important;
     border-bottom: none;
+}
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #e5e7eb;
+    border-radius: 2px;
+}
+
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 </style>

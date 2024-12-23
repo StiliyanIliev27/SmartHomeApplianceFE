@@ -3,7 +3,7 @@ import NavBar from '../NavBar.vue'
 import Chatbot from '../HomePage/Chatbot.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useChatStore } from '@/stores/useChatStore'
-import { authApi } from '@/api/authService'
+import { authApi } from '@/api/authApi'
 
 export default {
     name: 'LoginComponent',

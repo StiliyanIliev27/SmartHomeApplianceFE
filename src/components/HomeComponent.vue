@@ -17,8 +17,9 @@ import { useChatStore } from '@/stores/useChatStore'
 import Chatbot from './HomePage/Chatbot.vue'
 import SpecialOfferBanner from './HomePage/SpecialOfferBanner.vue'
 import Footer from './Footer.vue'
-import { cartApi } from '@/api/cartService'
-import { productApi } from '@/api/productService'
+import { productApi } from '@/api/productApi'
+import { cartService } from '@/services/cartService'
+import { cartApi } from '@/api/cartApi'
 
 export default {
     name: 'LandingPage',
@@ -38,7 +39,7 @@ export default {
         Footer
     },
     setup() {
-        return { authStore: useAuthStore(), chatStore: useChatStore() }
+        return { authStore: useAuthStore(), chatStore: useChatStore(), cartService: cartService }
     },
     data() {
         return {
@@ -197,190 +198,176 @@ export default {
                     validUntil: '2024-06-30'
                 }
             ],
-            scrolled: false // Add scrolled data property
+            scrolled: false,
+            cartItems: [], // Added missing cartItems array
+            user: null // Added missing user object
         }
     },
     methods: {
         async getLatestThreeProducts() {
             try {
                 const response = await productApi.getLatestThreeProducts();
-                this.latestProducts = [...response.data.result];
+                this.latestProducts = response.data.result || [];
             } catch (error) {
                 console.error('Error fetching latest products:', error);
+                this.$notify({
+                    title: 'Error',
+                    text: 'Failed to load latest products',
+                    type: 'error'
+                });
+            }
+        },
+        async clickAddToCart(productId, quantity) {
+            if (!this.isAuthenticated) {
+                this.goToLogin();
+                return;
+            }
+
+            try {
+                await this.cartService.addToCart(productId, quantity);
+                this.$notify({
+                    title: 'Success',
+                    text: 'Product added to cart',
+                    type: 'success'
+                });
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                this.$notify({
+                    title: 'Error',
+                    text: 'Failed to add product to cart',
+                    type: 'error'
+                });
+            }
+        },
+        async handleUpdateCart(productId, newQuantity, type) {
+            try {
+                if (newQuantity < 1) {
+                    // Премахване на продукта от количката
+                    await cartService.removeFromCart(productId);
+                } else {
+                    // Актуализиране на количеството
+                    await cartService.updateCart(productId, newQuantity);
+                }
+
+                // Получаване на актуалното състояние на количката
+                const response = await cartApi.getCart();
+                this.authStore.user.cartProducts = response.data.result.cartProducts;
+
+                console.log('Cart updated successfully');
+            } catch (error) {
+                console.error('Error updating cart:', error);
+                this.$notify({
+                    title: 'Error',
+                    text: 'Failed to update cart',
+                    type: 'error'
+                });
             }
         },
         closeMobileMenu() {
-            this.mobileMenuOpen = false
+            this.mobileMenuOpen = false;
         },
         openMobileMenu() {
-            this.mobileMenuOpen = true
+            this.mobileMenuOpen = true;
         },
         goToLogin() {
-            this.$router.push('/login')
+            this.$router.push('/login');
         },
         goToShop() {
-            this.$router.push('/shop')
+            this.$router.push('/shop');
         },
         scrollToSection(sectionId) {
-            const element = document.getElementById(sectionId)
-            element?.scrollIntoView({ behavior: 'smooth' })
-            this.closeMobileMenu()
-        },
-        handleSignOut() {
-            this.authStore.logout()
-            this.$router.push('/login')
-        },
-        updateAuthStatus() {
-            const user = this.authStore.user
-            if (user) {
-                this.user = {
-                    name: user.name || '',
-                    email: user.email || '',
-                    id: user.id || '',
-                    profilePictureUrl: user.profilePictureUrl || ''
-                }
-            } else {
-                this.user = {
-                    name: '',
-                    email: '',
-                    id: '',
-                    profilePictureUrl: ''
-                }
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                this.closeMobileMenu();
             }
         },
-        handleScroll() { // Add handleScroll method
-            this.scrolled = window.scrollY > 0
-        },
-        async addToCart(product) {
-            if (!this.isAuthenticated) {
-                this.goToLogin()
-                return
-            }
-
-            if (!product.id) {
-                product.id = crypto.randomUUID()
-            }
-
-            const userProducts = this.authStore.user.cartProducts;
-            const existingProduct = userProducts.find(item => item.productId === product.id)
-            if (existingProduct) {
-                existingProduct.quantity = (existingProduct.quantity || 1) + 1
-            } else {
-                userProducts.push({ ...existingProduct, quantity: 1 })
-            }
-
-            const response = await cartApi.addToCart(product.id, existingProduct.quantity);
-
-            if (response.data.statusCode !== 200) {
+        async handleSignOut() {
+            try {
+                await this.authStore.logout();
+                this.$router.push('/login');
+                this.$notify({
+                    title: 'Success',
+                    text: 'Successfully logged out',
+                    type: 'success'
+                });
+            } catch (error) {
+                console.error('Error signing out:', error);
                 this.$notify({
                     title: 'Error',
-                    text: 'Failed to add item to cart',
-                    type: 'error',
-                    duration: 3000,
-                    position: 'top-right',
-                    showClose: true,
-                    customClass: 'custom-notification-error'
-                })
-            } else {
-                // Show success notification with enhanced styling
-                this.$notify({
-                    title: 'Added to Cart',
-                    text: `${product.name} has been added to your cart`,
-                    type: 'success',
-                    duration: 3000,
-                    position: 'top-right',
-                    showClose: true,
-                    customClass: 'custom-notification'
-                })
+                    text: 'Failed to sign out',
+                    type: 'error'
+                });
             }
         },
-        removeFromCart(productId) {
-            const index = this.cartItems.findIndex(item => item.id === productId)
-            if (index > -1) {
-                const item = this.cartItems[index]
-                if (item.quantity > 1) {
-                    item.quantity--
-                } else {
-                    this.cartItems.splice(index, 1)
-                }
-
-                // Show enhanced notification
-                this.$notify({
-                    title: 'Removed from Cart',
-                    text: `Item has been removed from your cart`,
-                    type: 'info',
-                    duration: 3000,
-                    position: 'top-right',
-                    showClose: true,
-                    customClass: 'custom-notification'
-                })
-            }
+        updateAuthStatus() {
+            const user = this.authStore.user;
+            this.user = user ? {
+                name: user.name || '',
+                email: user.email || '',
+                id: user.id || '',
+                profilePictureUrl: user.profilePictureUrl || '/default-user.png'
+            } : null;
+        },
+        handleScroll() {
+            this.scrolled = window.scrollY > 50; // Increased threshold for better UX
+            requestAnimationFrame(() => {
+                document.documentElement.style.setProperty('--scroll-y', `${window.scrollY}px`);
+            });
         },
         applyDiscount(code) {
-            const offer = this.specialOffers.find(offer => offer.code === code)
+            const offer = this.specialOffers.find(offer => offer.code === code);
             if (!offer) {
                 this.$notify({
                     title: 'Invalid Code',
                     text: 'Please enter a valid discount code',
                     type: 'error',
-                    duration: 3000,
-                    position: 'top-right',
-                    showClose: true,
-                    customClass: 'custom-notification-error'
-                })
-                return false
+                    duration: 3000
+                });
+                return false;
             }
 
-            const validUntil = new Date(offer.validUntil)
+            const validUntil = new Date(offer.validUntil);
             if (validUntil < new Date()) {
                 this.$notify({
                     title: 'Expired Code',
                     text: 'This discount code has expired',
                     type: 'error',
-                    duration: 3000,
-                    position: 'top-right',
-                    showClose: true,
-                    customClass: 'custom-notification-error'
-                })
-                return false
+                    duration: 3000
+                });
+                return false;
             }
 
             this.$notify({
                 title: 'Success',
                 text: 'Discount code applied successfully',
                 type: 'success',
-                duration: 3000,
-                position: 'top-right',
-                showClose: true,
-                customClass: 'custom-notification-success'
-            })
-            return true
+                duration: 3000
+            });
+            return true;
         },
         checkout() {
             if (!this.isAuthenticated) {
-                this.goToLogin()
-                return
+                this.goToLogin();
+                return;
             }
 
-            if (this.cartItems.length === 0) {
+            if (!this.cartItems.length) {
                 this.$notify({
                     title: 'Empty Cart',
                     text: 'Please add items to your cart before checkout',
                     type: 'warning',
-                    duration: 3000,
-                    position: 'top-right',
-                    showClose: true,
-                    customClass: 'custom-notification-warning'
-                })
-                return
+                    duration: 3000
+                });
+                return;
             }
 
-            this.$router.push('/checkout')
+            this.$router.push('/checkout');
         }
     },
     computed: {
         isAuthenticated() {
-            return this.authStore.isAuthenticated
+            return this.authStore.isAuthenticated;
         },
         userProfile() {
             return this.authStore.user || {
@@ -388,46 +375,46 @@ export default {
                 email: '',
                 id: '',
                 profilePictureUrl: '/default-user.png'
-            }
+            };
         }
     },
     async created() {
         await this.getLatestThreeProducts();
+        const response = await cartApi.getCart();
+        this.authStore.user.cartProducts = response.data.result.cartProducts;
     },
     async mounted() {
-        this.updateAuthStatus()
+        this.updateAuthStatus();
 
-        // Watch for auth store changes
         this.$watch(
             () => this.authStore.user,
             () => {
-                this.updateAuthStatus()
+                this.updateAuthStatus();
             },
             { deep: true }
-        )
+        );
 
-        // Add scroll event listener for navbar transparency
-        window.addEventListener('scroll', this.handleScroll)
+        window.addEventListener('scroll', this.handleScroll, { passive: true });
+        document.documentElement.style.scrollBehavior = 'smooth';
 
-        // Add smooth scroll behavior
-        document.documentElement.style.scrollBehavior = 'smooth'
+        // Add resize event listener for responsive design
+        window.addEventListener('resize', this.handleResize, { passive: true });
+        this.handleResize();
     },
     beforeUnmount() {
-        // Remove scroll event listener
-        window.removeEventListener('scroll', this.handleScroll)
-
-        // Reset scroll behavior
-        document.documentElement.style.scrollBehavior = ''
+        window.removeEventListener('scroll', this.handleScroll);
+        window.removeEventListener('resize', this.handleResize);
+        document.documentElement.style.scrollBehavior = '';
     }
 }
 </script>
-
 <template>
-    <div class="bg-gradient-to-br from-emerald-100 via-teal-100 to-cyan-100 min-h-screen font-poppins">
+    <div class="bg-gradient-to-br from-emerald-100 via-teal-100 to-cyan-100 font-poppins">
         <!-- Fixed Header section -->
         <div class="fixed top-0 w-full z-50 transition-all duration-300"
             :class="{ 'bg-transparent': !scrolled, 'shadow-lg backdrop-blur-md bg-white/10': scrolled }">
-            <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" @sign-out="handleSignOut" />
+            <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" @sign-out="handleSignOut"
+                @update-cart="handleUpdateCart" />
         </div>
 
         <Chatbot :user="authStore.user" />
@@ -435,45 +422,46 @@ export default {
         <!-- Hero section with enhanced animations -->
         <div class="relative isolate pt-16">
             <div class="absolute inset-0">
-                <div
-                    class="absolute inset-0 bg-gradient-to-r from-emerald-800 via-teal-800 to-cyan-800 opacity-80 z-10">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-800/90 via-teal-800/90 to-cyan-800/90 z-10">
                 </div>
                 <div class="absolute inset-0 overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2942&q=80"
                         alt="Smart Home Background"
-                        class="h-full w-full object-cover object-center transform hover:scale-105 transition-all duration-700 animate-ken-burns" />
+                        class="h-full w-full object-cover object-center transform hover:scale-110 transition-all duration-1000 animate-ken-burns"
+                        loading="lazy" />
                 </div>
             </div>
             <div class="relative px-4 sm:px-6 pt-14 lg:px-8 z-20">
-                <div class="mx-auto max-w-2xl py-24 sm:py-32 lg:py-48">
+                <div class="mx-auto max-w-3xl py-24 sm:py-32 lg:py-48">
                     <div class="text-center animate-slide-up">
-                        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white hover:scale-105 
-                            transition-transform duration-300 text-shadow-xl font-montserrat leading-tight
-                            animate-text-glow-enhanced bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-white">
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white 
+                            hover:scale-105 transition-transform duration-500 text-shadow-2xl font-montserrat leading-tight
+                            animate-text-glow-enhanced bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-white
+                            drop-shadow-[0_0_25px_rgba(255,255,255,0.3)]">
                             Transform Your Home with Smart Technology
                         </h1>
-                        <p class="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-white font-light 
-                            transition-colors duration-300 animate-fade-in-delay-enhanced backdrop-blur-sm 
-                            bg-white/10 p-4 rounded-lg shadow-lg hover:bg-white/20">
+                        <p class="mt-6 sm:mt-8 text-lg sm:text-xl leading-8 sm:leading-9 text-white font-light 
+                            transition-all duration-500 animate-fade-in-delay-enhanced backdrop-blur-sm 
+                            bg-white/10 p-6 rounded-xl shadow-2xl hover:bg-white/20 max-w-2xl mx-auto
+                            border border-white/20">
                             Experience the future of home automation. Control your entire home from your smartphone,
                             save energy, and enhance your comfort and security.
                         </p>
-                        <div
-                            class="mt-6 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6">
-                            <button @click="goToShop()" class="w-full sm:w-auto rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 
-                                px-5 py-3 text-sm font-semibold text-white shadow-xl hover:shadow-2xl 
-                                hover:scale-110 transition-all duration-300 animate-pulse-slow-enhanced
+                        <div class="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
+                            <button @click="goToShop()" class="w-full sm:w-auto rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 
+                                px-8 py-4 text-base sm:text-lg font-semibold text-white shadow-2xl hover:shadow-3xl 
+                                hover:scale-110 transition-all duration-500 animate-pulse-slow-enhanced
                                 border border-white/20 backdrop-blur-sm text-center cursor-pointer
-                                hover:from-emerald-500 hover:to-teal-500">
+                                hover:from-emerald-500 hover:to-teal-500 min-w-[200px]">
                                 Shop Now
                             </button>
-                            <button @click="scrollToSection('shop')" class="w-full sm:w-auto text-sm font-semibold leading-6 text-white 
-                                hover:text-emerald-200 transition-colors duration-300 group flex items-center justify-center
-                                relative overflow-hidden px-5 py-3 rounded-md hover:bg-white/10 cursor-pointer
-                                hover:shadow-lg">
+                            <button @click="scrollToSection('shop')" class="w-full sm:w-auto text-base sm:text-lg font-semibold leading-6 text-white 
+                                hover:text-emerald-200 transition-all duration-500 group flex items-center justify-center
+                                relative overflow-hidden px-8 py-4 rounded-xl hover:bg-white/10 cursor-pointer
+                                hover:shadow-2xl border border-white/20 min-w-[200px]">
                                 View Products
-                                <span aria-hidden="true" class="ml-2 inline-block transition-transform duration-300 
-                                    group-hover:translate-x-2 animate-float">→</span>
+                                <span aria-hidden="true" class="ml-3 inline-block transition-transform duration-500 
+                                    group-hover:translate-x-3 animate-float text-xl">→</span>
                             </button>
                         </div>
                     </div>
@@ -481,9 +469,11 @@ export default {
             </div>
         </div>
     </div>
+
     <!-- Special Offers Banner with enhanced styling -->
     <SpecialOfferBanner :goToShop="goToShop" :discountCode="specialOffers[0].code"
-        :discountPercentage="specialOffers[0].discountPercentage" class="animate-fade-in" />
+        :discountPercentage="specialOffers[0].discountPercentage"
+        class="animate-fade-in transform hover:scale-105 transition-all duration-500" />
 
     <!-- Image Showcase Section with improved animations -->
     <div
@@ -496,7 +486,7 @@ export default {
                     <div class="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-purple-500/30 opacity-0 
                             group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
                     <img :src="image.src" :alt="image.alt" class="h-64 sm:h-80 lg:h-96 w-full object-cover transition duration-500 
-                            group-hover:scale-110 filter group-hover:brightness-110" />
+                            group-hover:scale-110 filter group-hover:brightness-110" loading="lazy" />
                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent 
                             opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 text-white transform translate-y-4 
@@ -594,7 +584,7 @@ export default {
                     <div class="relative overflow-hidden rounded-lg">
                         <img :src="product.imageUrl" :alt="product.name" class="w-full h-40 sm:h-48 object-cover rounded-lg transform 
                                 group-hover:scale-110 transition-transform duration-500 
-                                filter group-hover:brightness-110" />
+                                filter group-hover:brightness-110" loading="lazy" />
                         <div class="absolute inset-0 bg-gradient-to-t from-purple-900/80 
                                 to-transparent opacity-0 group-hover:opacity-100 
                                 transition-opacity duration-300"></div>
@@ -614,7 +604,7 @@ export default {
                     <p class="mt-2 text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-400 
                             to-teal-400 bg-clip-text text-transparent group-hover:scale-105 
                             transition-transform">{{ product.price }}</p>
-                    <button @click="addToCart(product)" :disabled="!product.stockQuantity" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 
+                    <button @click="clickAddToCart(product.id, 1)" :disabled="!product.stockQuantity" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 
                             text-white px-4 py-2 rounded-lg hover:from-purple-500 
                             hover:to-pink-500 transition-all duration-300 disabled:opacity-50 
                             disabled:hover:from-purple-600 disabled:hover:to-pink-600 
