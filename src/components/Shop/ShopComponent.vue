@@ -4,6 +4,7 @@ import Footer from '../Footer.vue'
 import Chatbot from '../HomePage/Chatbot.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useChatStore } from '@/stores/useChatStore'
+import { useToast } from 'vue-toastification'
 import axios from 'axios'
 import { debounce } from 'lodash';
 
@@ -17,7 +18,8 @@ export default {
   setup() {
     const authStore = useAuthStore()
     const chatStore = useChatStore()
-    return { authStore, chatStore }
+    const toast = useToast()
+    return { authStore, chatStore, toast }
   },
   data() {
     return {
@@ -66,6 +68,9 @@ export default {
     this.setupScrollListener()
   },
   methods: {
+    goToProductDetails(productId) {
+      this.$router.push(`/product/${productId}`)
+    },
     async fetchInitialProducts() {
       try {
         const response = await axios.get('https://localhost:7200/api/Product')
@@ -73,12 +78,7 @@ export default {
         this.products = [...this.allProducts]
       } catch (error) {
         console.error('Error fetching products:', error)
-        this.$notify({
-          title: 'Error',
-          text: 'Failed to load products. Please try again later.',
-          type: 'error',
-          duration: 3000
-        })
+        this.toast.error('Failed to load products. Please try again later.')
       } finally {
         this.loading = false
       }
@@ -136,12 +136,7 @@ export default {
         this.cartItems.push({ ...product, quantity: 1 })
       }
 
-      this.$notify({
-        title: 'Added to Cart',
-        text: `${product.name} has been added to your cart`,
-        type: 'success',
-        duration: 3000
-      })
+      this.toast.success(`${product.name} has been added to your cart`)
     },
     filterByCategory(category) {
       this.selectedCategory = category
@@ -220,8 +215,7 @@ export default {
     <!-- Navbar -->
     <div class="fixed top-0 w-full z-50 transition-all duration-300"
       :class="{ 'bg-transparent': !scrolled, 'shadow-lg backdrop-blur-md bg-white/90': scrolled }">
-      <NavBar :is-authenticated="isAuthenticated" :user="authStore.user"
-        @sign-out="handleSignOut" />
+      <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" @sign-out="handleSignOut" />
     </div>
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 pt-24">
@@ -317,7 +311,7 @@ export default {
       <!-- Products Grid -->
       <div v-else>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <div v-for="product in paginatedProducts" :key="product.id"
+          <div v-for="product in paginatedProducts" :key="product.id" @click="goToProductDetails(product.id)"
             class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
             <div class="relative overflow-hidden rounded-t-2xl">
               <img :src="product.imageUrl" :alt="product.name" loading="lazy"

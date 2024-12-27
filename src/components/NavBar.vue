@@ -17,6 +17,8 @@ import {
     XMarkIcon as XIcon
 } from '@heroicons/vue/24/outline'
 import { cartService } from '@/services/cartService'
+import cartApi from '@/api/cartApi'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 export default {
     name: 'NavBar',
@@ -41,6 +43,9 @@ export default {
     props: {
         isAuthenticated: Boolean,
         user: Object
+    },
+    setup() {
+        return { authStore: useAuthStore() }
     },
     data() {
         return {
@@ -71,8 +76,19 @@ export default {
                event.preventDefault();
                event.stopPropagation();
                
-               // Emit update event
-               this.$emit('update-cart', productId, newQuantity);
+               if (newQuantity < 1) {
+                    // Премахване на продукта от количката
+                    await cartService.removeFromCart(productId);
+                } else {
+                    // Актуализиране на количеството
+                    await cartService.updateCart(productId, newQuantity);
+                }
+
+                // Получаване на актуалното състояние на количката
+                const response = await cartApi.getCart();
+                this.authStore.user.cartProducts = response.data.result.cartProducts;
+
+                console.log('Cart updated successfully');
            } catch (error) {
                console.error('Error updating quantity:', error);
            }

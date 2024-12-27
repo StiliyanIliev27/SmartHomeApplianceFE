@@ -20,6 +20,7 @@ import Footer from './Footer.vue'
 import { productApi } from '@/api/productApi'
 import { cartService } from '@/services/cartService'
 import { cartApi } from '@/api/cartApi'
+import { useToast } from 'vue-toastification'
 
 export default {
     name: 'LandingPage',
@@ -39,7 +40,8 @@ export default {
         Footer
     },
     setup() {
-        return { authStore: useAuthStore(), chatStore: useChatStore(), cartService: cartService }
+        const toast = useToast()
+        return { authStore: useAuthStore(), chatStore: useChatStore(), cartService: cartService, toast }
     },
     data() {
         return {
@@ -210,11 +212,7 @@ export default {
                 this.latestProducts = response.data.result || [];
             } catch (error) {
                 console.error('Error fetching latest products:', error);
-                this.$notify({
-                    title: 'Error',
-                    text: 'Failed to load latest products',
-                    type: 'error'
-                });
+                this.toast.error('Failed to load latest products');
             }
         },
         async clickAddToCart(productId, quantity) {
@@ -225,42 +223,10 @@ export default {
 
             try {
                 await this.cartService.addToCart(productId, quantity);
-                this.$notify({
-                    title: 'Success',
-                    text: 'Product added to cart',
-                    type: 'success'
-                });
+                this.toast.success('Product added to cart');
             } catch (error) {
                 console.error('Error adding to cart:', error);
-                this.$notify({
-                    title: 'Error',
-                    text: 'Failed to add product to cart',
-                    type: 'error'
-                });
-            }
-        },
-        async handleUpdateCart(productId, newQuantity, type) {
-            try {
-                if (newQuantity < 1) {
-                    // Премахване на продукта от количката
-                    await cartService.removeFromCart(productId);
-                } else {
-                    // Актуализиране на количеството
-                    await cartService.updateCart(productId, newQuantity);
-                }
-
-                // Получаване на актуалното състояние на количката
-                const response = await cartApi.getCart();
-                this.authStore.user.cartProducts = response.data.result.cartProducts;
-
-                console.log('Cart updated successfully');
-            } catch (error) {
-                console.error('Error updating cart:', error);
-                this.$notify({
-                    title: 'Error',
-                    text: 'Failed to update cart',
-                    type: 'error'
-                });
+                this.toast.error('Failed to add product to cart');
             }
         },
         closeMobileMenu() {
@@ -286,18 +252,10 @@ export default {
             try {
                 await this.authStore.logout();
                 this.$router.push('/login');
-                this.$notify({
-                    title: 'Success',
-                    text: 'Successfully logged out',
-                    type: 'success'
-                });
+                this.toast.success('Successfully logged out');
             } catch (error) {
                 console.error('Error signing out:', error);
-                this.$notify({
-                    title: 'Error',
-                    text: 'Failed to sign out',
-                    type: 'error'
-                });
+                this.toast.error('Failed to sign out');
             }
         },
         updateAuthStatus() {
