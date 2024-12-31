@@ -58,7 +58,6 @@ export default {
             if (!isEmailValid || !isPasswordValid) {
                 return;
             }
-
             this.isLoading = true
 
             try {
@@ -67,7 +66,9 @@ export default {
                     rememberMe: this.rememberMe
                 })
                 await this.$nextTick()
-                this.$router.push('/')
+                const redirect = this.$route.query.redirect || '/';
+                this.$router.push(redirect)
+                
             } catch (error) {
                 this.error = error.response?.data.errorMessages[0] || 'Invalid email or password'
                 console.error('Login error:', error)

@@ -19,6 +19,7 @@ import {
 import { cartService } from '@/services/cartService'
 import cartApi from '@/api/cartApi'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useToast } from 'vue-toastification'
 
 export default {
     name: 'NavBar',
@@ -45,7 +46,10 @@ export default {
         user: Object
     },
     setup() {
-        return { authStore: useAuthStore() }
+        return { 
+            authStore: useAuthStore(),
+            toast: useToast()
+        }
     },
     data() {
         return {
@@ -53,6 +57,7 @@ export default {
             notifications: 3,
             showCartPreview: false,
             cartHoverTimeout: null,
+            cartItems: [],
             guestNavigation: [
                 { name: 'Home', href: '/', icon: HomeIcon },
                 { name: 'Products', href: '/shop', icon: ShoppingCartIcon },
@@ -72,25 +77,29 @@ export default {
            if (newQuantity < 1) return;
            
            try {
-               // Prevent default navigation
                event.preventDefault();
                event.stopPropagation();
                
                if (newQuantity < 1) {
-                    // Премахване на продукта от количката
                     await cartService.removeFromCart(productId);
                 } else {
-                    // Актуализиране на количеството
                     await cartService.updateCart(productId, newQuantity);
                 }
 
-                // Получаване на актуалното състояние на количката
-                const response = await cartApi.getCart();
-                this.authStore.user.cartProducts = response.data.result.cartProducts;
-
-                console.log('Cart updated successfully');
+                await this.refreshCart();
+                this.toast.success('Cart updated successfully');
            } catch (error) {
                console.error('Error updating quantity:', error);
+               this.toast.error('Failed to update cart');
+           }
+       },
+       async refreshCart() {
+           try {
+               const response = await cartApi.getCart();
+               this.authStore.user.cartProducts = response.data.result.cartProducts;
+               this.cartItems = response.data.result.cartProducts;
+           } catch (error) {
+               console.error('Error refreshing cart:', error);
            }
        },
        incrementQuantity(productId, currentQuantity, event) {
@@ -98,14 +107,19 @@ export default {
            event.stopPropagation();
            this.updateQuantity(productId, currentQuantity + 1, event);
        },     
-       decrementQuantity(productId, currentQuantity, event) {
+       async decrementQuantity(productId, currentQuantity, event) {
            event.preventDefault(); 
            event.stopPropagation();
-           if (currentQuantity > 1) {
-               this.updateQuantity(productId, currentQuantity - 1, event);
-           }
-           else if(currentQuantity === 1){
-                cartService.removeFromCart(productId);
+           try {
+               if (currentQuantity > 1) {
+                   await this.updateQuantity(productId, currentQuantity - 1, event);
+               } else if(currentQuantity === 1) {
+                    await cartService.removeFromCart(productId);
+                    await this.refreshCart();
+                    this.toast.success('Product removed from cart');
+               }
+           } catch (error) {
+               this.toast.error('Failed to update cart');
            }
        },
         handleSignOut() {
@@ -116,7 +130,6 @@ export default {
                 this.handleSignOut()
                 return
             }
-            // Close mobile menu after navigation
             this.mobileMenuOpen = false
             this.$router.push(href).catch(err => {
                 if (err.name !== 'NavigationDuplicated') {
@@ -125,9 +138,7 @@ export default {
             })
         },
         handleImageError(event) {
-            // Заменяме със стандартна икона при грешка при зареждане на изображението
             event.target.style.display = 'none';
-            // Можете да добавите допълнителна логика тук
         },
         showCart() {
             if (this.cartHoverTimeout) {
@@ -138,21 +149,20 @@ export default {
         hideCart() {
             this.cartHoverTimeout = setTimeout(() => {
                 this.showCartPreview = false;
-            }, 300); // Small delay to prevent flickering
+            }, 300);
         }
     },
     watch: {
         isAuthenticated(newVal) {
-            console.log('Auth status changed:', newVal);
+            this.refreshCart();
         },
         user: {
             handler(newVal) {
-                console.log('User data changed:', newVal);
+                this.refreshCart();
             },
             deep: true
         },
         '$route'() {
-            // Close mobile menu on route change
             this.mobileMenuOpen = false
         }
     },
@@ -174,10 +184,13 @@ export default {
         },
         userProfilePicture() {
             return this.user?.profilePictureUrl || '';
+        },
+        cartTotal() {
+            return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
         }
     },
-    mounted() {
-        console.log('User data in NavBar:', this.user);
+    async mounted() {
+        await this.refreshCart();
     },
     beforeDestroy() {
         if (this.cartHoverTimeout) {
@@ -249,7 +262,7 @@ export default {
                                         <div class="flex justify-between items-center mb-3">
                                             <span class="text-sm font-medium text-gray-900">Total</span>
                                             <span class="text-sm font-bold text-indigo-600">
-                                                ${{ user.cartProducts.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2) }}
+                                                ${{ cartTotal }}
                                             </span>
                                         </div>
                                         <div class="space-y-2">

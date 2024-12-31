@@ -7,12 +7,13 @@ import { useChatStore } from '@/stores/useChatStore'
 import { useToast } from 'vue-toastification'
 import axios from 'axios'
 import { debounce } from 'lodash';
+import { cartService } from '@/services/cartService'
 
 export default {
   name: 'ShopComponent',
   components: {
     NavBar,
-    Footer, 
+    Footer,
     Chatbot
   },
   setup() {
@@ -41,7 +42,7 @@ export default {
       categories: [
         'All',
         'Security and Surveillance',
-        'Lighting and Ambiance', 
+        'Lighting and Ambiance',
         'Heating and Cooling',
         'Kitchen Appliances',
         'Entertainment and Media',
@@ -55,12 +56,13 @@ export default {
       searchQuery: '',
       sortBy: 'price-low',
       currentPage: 1,
-      pageSize: 12, // Increased for better UX
+      pageSize: 8,
       minPrice: 0,
       maxPrice: 1000,
       loading: true,
       allProducts: [],
-      isMobileMenuOpen: false
+      isMobileMenuOpen: false,
+      showAddedAnimation: false
     }
   },
   async created() {
@@ -68,8 +70,10 @@ export default {
     this.setupScrollListener()
   },
   methods: {
-    goToProductDetails(productId) {
-      this.$router.push(`/product/${productId}`)
+    goToProductDetails(productId, event) {
+      if (!event.target.closest('button')) {
+        this.$router.push(`/product/${productId}`)
+      }
     },
     async fetchInitialProducts() {
       try {
@@ -88,9 +92,8 @@ export default {
       try {
         let filteredProducts = [...this.allProducts]
 
-        // Apply filters in order of most restrictive first
         if (this.selectedCategory !== 'All') {
-          filteredProducts = filteredProducts.filter(product => 
+          filteredProducts = filteredProducts.filter(product =>
             product.category === this.categoryMapping[this.selectedCategory]
           )
         }
@@ -103,16 +106,20 @@ export default {
           )
         }
 
-        filteredProducts = filteredProducts.filter(product => 
+        filteredProducts = filteredProducts.filter(product =>
           product.price >= this.minPrice && product.price <= this.maxPrice
         )
 
-        // Sort after filtering to improve performance
-        filteredProducts.sort((a, b) => 
+        filteredProducts.sort((a, b) =>
           this.sortBy === 'price-low' ? a.price - b.price : b.price - a.price
         )
 
         this.products = filteredProducts
+
+        const maxPage = Math.ceil(filteredProducts.length / this.pageSize)
+        if (this.currentPage > maxPage) {
+          this.currentPage = 1
+        }
       } catch (error) {
         console.error('Error filtering products:', error)
       } finally {
@@ -123,20 +130,30 @@ export default {
       this.authStore.logout()
       this.$router.push('/login')
     },
-    addToCart(product) {
+    async addToCart(productId, quantity, event) {
       if (!this.isAuthenticated) {
-        this.$router.push('/login')
+        this.$router.push({ name: 'Login', query: { redirect: this.$route.path } });
         return
       }
 
-      const existingProduct = this.cartItems.find(item => item.id === product.id)
-      if (existingProduct) {
-        existingProduct.quantity++
-      } else {
-        this.cartItems.push({ ...product, quantity: 1 })
+      event.stopPropagation()
+      try {
+        this.showAddedAnimation = true;
+        await cartService.addToCart(productId, quantity);
+        this.toast.success('Product added to cart successfully!', {
+          position: 'top-right',
+          duration: 3000,
+          icon: '🛍️'
+        });
+        setTimeout(() => {
+          this.showAddedAnimation = false;
+        }, 1000);
+      } catch (error) {
+        this.toast.error('Failed to add product to cart', {
+          position: 'top-right',
+          duration: 3000
+        });
       }
-
-      this.toast.success(`${product.name} has been added to your cart`)
     },
     filterByCategory(category) {
       this.selectedCategory = category
@@ -147,15 +164,20 @@ export default {
     previousPage() {
       if (this.currentPage > 1) {
         this.currentPage--
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     },
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     },
     goToPage(page) {
-      this.currentPage = page
+      if (page !== this.currentPage && page >= 1 && page <= this.totalPages) {
+        this.currentPage = page
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
     },
     toggleMobileMenu() {
       this.isMobileMenuOpen = !this.isMobileMenuOpen
@@ -175,18 +197,19 @@ export default {
       return this.authStore.isAuthenticated
     },
     totalPages() {
-      return Math.ceil(this.products.length / this.pageSize)
+      return Math.max(1, Math.ceil(this.products.length / this.pageSize))
     },
     paginatedProducts() {
       const startIndex = (this.currentPage - 1) * this.pageSize
-      return this.products.slice(startIndex, startIndex + this.pageSize)
+      const endIndex = startIndex + this.pageSize
+      return this.products.slice(startIndex, endIndex)
     },
     hasProducts() {
       return this.products.length > 0
     }
   },
   watch: {
-    searchQuery: debounce(function() {
+    searchQuery: debounce(function () {
       this.currentPage = 1
       this.fetchProducts()
     }, 300),
@@ -220,74 +243,76 @@ export default {
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 pt-24">
       <!-- Hero Section -->
-      <div class="text-center mb-12">
-        <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Smart Home Collection</h1>
-        <p class="text-base lg:text-lg text-gray-600">Discover the future of home automation with our curated selection</p>
+      <div class="text-center mb-8 sm:mb-12 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-8 sm:py-12 rounded-3xl shadow-xl">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 animate-fade-in">Smart Home Collection</h1>
+        <p class="text-base sm:text-lg lg:text-xl opacity-90">Discover the future of home automation with our curated selection</p>
       </div>
 
       <!-- Enhanced Search and Filter Section -->
-      <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6 lg:p-8 mb-12">
+      <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 lg:p-10 mb-8 sm:mb-12">
         <!-- Search Bar -->
-        <div class="relative mb-6">
+        <div class="relative mb-6 sm:mb-8">
           <input type="text" v-model="searchQuery" placeholder="Search products..."
-            class="w-full pl-12 pr-4 py-3 md:py-4 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 text-base md:text-lg" />
-          <svg class="w-6 h-6 md:w-7 md:h-7 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
+            class="w-full pl-12 sm:pl-14 pr-4 sm:pr-6 py-3 sm:py-4 rounded-2xl border-2 border-gray-200 focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300 text-base sm:text-lg backdrop-blur-sm bg-white/60" />
+          <svg class="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500 absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-6">
+        <div class="flex flex-col lg:flex-row gap-6 sm:gap-8">
           <!-- Price Range Filter -->
           <div class="w-full lg:w-1/3">
-            <div class="bg-gray-50 p-4 md:p-6 rounded-xl">
-              <h3 class="text-lg font-semibold text-gray-800 mb-4">Price Range</h3>
-              <div class="space-y-4">
+            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 sm:p-6 rounded-2xl shadow-inner">
+              <h3 class="text-lg sm:text-xl font-bold text-emerald-800 mb-4 sm:mb-6">Price Range</h3>
+              <div class="space-y-4 sm:space-y-6">
                 <div class="relative">
-                  <label class="text-sm text-gray-600 mb-2 block">Minimum Price</label>
+                  <label class="text-sm font-medium text-emerald-700 mb-2 block">Minimum Price</label>
                   <input type="number" v-model="minPrice" placeholder="0"
-                    class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" />
-                  <span class="absolute left-3 top-[calc(50%+6px)] transform -translate-y-1/2 text-gray-500 font-medium">$</span>
+                    class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-emerald-200 focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all bg-white/70" />
+                  <span class="absolute left-4 top-[calc(50%+6px)] transform -translate-y-1/2 text-emerald-600 font-medium">$</span>
                 </div>
                 <div class="relative">
-                  <label class="text-sm text-gray-600 mb-2 block">Maximum Price</label>
+                  <label class="text-sm font-medium text-emerald-700 mb-2 block">Maximum Price</label>
                   <input type="number" v-model="maxPrice" placeholder="1000"
-                    class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" />
-                  <span class="absolute left-3 top-[calc(50%+6px)] transform -translate-y-1/2 text-gray-500 font-medium">$</span>
+                    class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-emerald-200 focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all bg-white/70" />
+                  <span class="absolute left-4 top-[calc(50%+6px)] transform -translate-y-1/2 text-emerald-600 font-medium">$</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Categories -->
-          <div class="w-full lg:w-2/3">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Categories</h3>
+          <div class="w-full lg:w-2/3 relative">
+            <h3 class="text-lg sm:text-xl font-bold text-emerald-800 mb-4 sm:mb-6">Categories</h3>
             <!-- Mobile Categories Menu -->
-            <div class="lg:hidden mb-4">
+            <div class="lg:hidden relative" style="position: relative; isolation: isolate;">
               <button @click="toggleMobileMenu"
-                class="w-full px-4 py-2 bg-emerald-600 text-white rounded-xl flex items-center justify-between">
-                <span>{{ selectedCategory }}</span>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl flex items-center justify-between shadow-lg hover:shadow-xl transition-all relative z-[1]">
+                <span class="text-base sm:text-lg font-medium">{{ selectedCategory }}</span>
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              <div v-if="isMobileMenuOpen"
-                class="absolute z-50 mt-2 w-full bg-white rounded-xl shadow-lg border border-gray-200">
-                <button v-for="category in categories" :key="category" @click="filterByCategory(category)"
-                  class="w-full px-4 py-2 text-left hover:bg-emerald-50"
-                  :class="{ 'bg-emerald-100': selectedCategory === category }">
-                  {{ category }}
-                </button>
-              </div>
+              <transition name="fade">
+                <div v-if="isMobileMenuOpen"
+                  class="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-emerald-100 max-h-[60vh] overflow-y-auto z-[9999]">
+                  <button v-for="category in categories" :key="category" @click="filterByCategory(category)"
+                    class="w-full px-4 sm:px-6 py-3 sm:py-4 text-left hover:bg-emerald-50 transition-colors first:rounded-t-2xl last:rounded-b-2xl"
+                    :class="{ 'bg-emerald-100 text-emerald-700 font-medium': selectedCategory === category }">
+                    {{ category }}
+                  </button>
+                </div>
+              </transition>
             </div>
             <!-- Desktop Categories -->
-            <div class="hidden lg:flex flex-wrap gap-3">
+            <div class="hidden lg:grid grid-cols-3 xl:grid-cols-4 gap-3">
               <button v-for="category in categories" :key="category" @click="filterByCategory(category)" :class="[
-                'px-4 py-2 rounded-xl transition-all duration-300 text-sm font-medium border-2',
+                'px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium border-2 shadow-sm hover:shadow-lg',
                 selectedCategory === category
-                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-200 transform scale-105'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-500 hover:text-emerald-600'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-transparent transform scale-105'
+                  : 'bg-white/70 backdrop-blur-sm text-gray-700 border-emerald-100 hover:border-emerald-500 hover:text-emerald-600'
               ]">
                 {{ category }}
               </button>
@@ -297,42 +322,57 @@ export default {
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="flex justify-center items-center my-12 md:my-20">
-        <div class="animate-spin rounded-full h-12 w-12 md:h-16 md:w-16 border-4 border-emerald-500 border-t-transparent"></div>
+      <div v-if="loading" class="flex justify-center items-center my-12 sm:my-16">
+        <div class="relative">
+          <div class="animate-spin rounded-full h-16 w-16 sm:h-20 sm:w-20 border-4 border-emerald-200"></div>
+          <div class="animate-spin rounded-full h-16 w-16 sm:h-20 sm:w-20 border-4 border-emerald-500 border-t-transparent absolute top-0"></div>
+        </div>
       </div>
 
       <!-- No Products Found Message -->
-      <div v-else-if="!hasProducts" class="text-center my-12 md:my-20">
-        <div class="text-gray-500 text-lg md:text-xl">
+      <div v-else-if="!hasProducts" class="text-center my-12 sm:my-16 bg-white/80 backdrop-blur-sm rounded-3xl p-8 sm:p-12 shadow-lg">
+        <svg class="w-16 h-16 sm:w-20 sm:h-20 text-emerald-500 mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div class="text-lg sm:text-xl text-gray-600">
           No products found matching your criteria. Try adjusting your filters.
         </div>
       </div>
 
       <!-- Products Grid -->
       <div v-else>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <div v-for="product in paginatedProducts" :key="product.id" @click="goToProductDetails(product.id)"
-            class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-            <div class="relative overflow-hidden rounded-t-2xl">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          <div v-for="product in paginatedProducts" :key="product.id" @click="goToProductDetails(product.id, $event)"
+            class="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer overflow-hidden">
+            <div class="relative overflow-hidden">
               <img :src="product.imageUrl" :alt="product.name" loading="lazy"
-                class="w-full h-48 sm:h-56 md:h-64 object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                class="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover transform group-hover:scale-110 transition-transform duration-700" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div v-if="product.stockQuantity === 0"
-                class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-lg">
                 Out of Stock
               </div>
             </div>
-            <div class="p-4 md:p-6">
-              <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-1">
-                {{ product.name }}</h3>
-              <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ product.description }}</p>
+            <div class="p-4 sm:p-6">
+              <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-emerald-600 transition-colors line-clamp-1">
+                {{ product.name }}
+              </h3>
+              <p class="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6 line-clamp-2">{{ product.description }}</p>
               <div class="flex justify-between items-center">
-                <span class="text-xl md:text-2xl font-bold text-emerald-600">${{ product.price }}</span>
-                <button @click="addToCart(product)" :disabled="product.stockQuantity === 0" :class="[
-                  'px-4 md:px-6 py-2 md:py-2.5 rounded-xl font-medium transition-all duration-300 transform text-sm md:text-base',
+                <span class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  ${{ product.price }}
+                </span>
+                <button @click="addToCart(product.id, 1, $event)" :disabled="product.stockQuantity === 0" :class="[
+                  'px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-300 transform flex items-center gap-2',
                   product.stockQuantity === 0
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-105 active:scale-95'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-lg hover:scale-105 active:scale-95'
                 ]">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
                   Add to Cart
                 </button>
               </div>
@@ -341,36 +381,41 @@ export default {
         </div>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="flex justify-center items-center mt-8 md:mt-12 mb-8 gap-2 md:gap-3">
+        <div class="flex flex-wrap justify-center items-center gap-2 sm:gap-4 mt-12 sm:mt-16 mb-6 sm:mb-8">
           <button @click="previousPage"
-            class="px-3 md:px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-1 md:gap-2 text-sm md:text-base"
-            :class="currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:bg-emerald-50'">
-            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-300 flex items-center gap-2"
+            :class="currentPage === 1 
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+              : 'bg-white text-emerald-600 hover:bg-emerald-50 shadow-md hover:shadow-lg'">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
             Previous
           </button>
 
-          <div class="flex gap-1 md:gap-2">
+          <div class="flex gap-2">
             <button v-for="page in totalPages" :key="page" @click="goToPage(page)"
-              class="w-8 h-8 md:w-10 md:h-10 rounded-xl font-medium transition-all duration-300 flex items-center justify-center text-sm md:text-base"
-              :class="currentPage === page ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-emerald-50'">
+              class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl text-sm sm:text-base font-medium transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg"
+              :class="currentPage === page 
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white transform scale-110' 
+                : 'bg-white text-gray-700 hover:bg-emerald-50'">
               {{ page }}
             </button>
           </div>
 
           <button @click="nextPage"
-            class="px-3 md:px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-1 md:gap-2 text-sm md:text-base"
-            :class="currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 hover:bg-emerald-50'">
+            class="px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-300 flex items-center gap-2"
+            :class="currentPage === totalPages 
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+              : 'bg-white text-emerald-600 hover:bg-emerald-50 shadow-md hover:shadow-lg'">
             Next
-            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
     </div>
-
     <Chatbot :user="authStore.user" />
     <Footer />
   </div>
