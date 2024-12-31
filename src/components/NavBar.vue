@@ -14,7 +14,8 @@ import {
     ShoppingBagIcon,
     HeartIcon,
     InformationCircleIcon,
-    XMarkIcon as XIcon
+    XMarkIcon as XIcon,
+    ClipboardDocumentListIcon
 } from '@heroicons/vue/24/outline'
 import { cartService } from '@/services/cartService'
 import cartApi from '@/api/cartApi'
@@ -39,7 +40,8 @@ export default {
         ShoppingBagIcon,
         HeartIcon,
         InformationCircleIcon,
-        XIcon
+        XIcon,
+        ClipboardDocumentListIcon
     },
     props: {
         isAuthenticated: Boolean,
@@ -64,11 +66,11 @@ export default {
                 { name: 'About', href: '/about', icon: InformationCircleIcon },
                 { name: 'Support', href: '/support', icon: PhoneIcon }
             ],
-            authenticatedNavigation: [
-                { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+            authenticatedNavigation: [             
                 { name: 'Products', href: '/shop', icon: ShoppingBagIcon },
-                { name: 'Wishlist', href: '/wishlist', icon: HeartIcon },
-                { name: 'Cart', href: '/cart', icon: ShoppingCartIcon, badge: '3' }
+                { name: 'My Orders', href: '/orders', icon: ClipboardDocumentListIcon },
+                { name: 'Cart', href: '/cart', icon: ShoppingCartIcon },
+                { name: 'Support', href: '/support', icon: PhoneIcon }
             ],
         }
     },

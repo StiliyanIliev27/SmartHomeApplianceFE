@@ -53,9 +53,6 @@ export default {
         }
     },
     computed: {
-        isAuthenticated() {
-            return this.authStore.isAuthenticated
-        },
         averageRating() {
             if (!this.reviews.length) return 0;
             return (this.reviews.reduce((acc, review) => acc + review.rating, 0) / this.reviews.length).toFixed(1);
@@ -306,8 +303,11 @@ export default {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-        <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" @sign-out="handleSignOut" />
+    <div class="min-h-screen font-poppins bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+        <div class="fixed top-0 w-full z-50 transition-all duration-300"
+            :class="{ 'bg-transparent': !scrolled, 'shadow-lg backdrop-blur-md bg-white/90': scrolled }">
+            <NavBar :is-authenticated="authStore.isAuthenticated" :user="authStore.user" @sign-out="handleSignOut" />
+        </div>
 
         <Chatbot :user="authStore.user" />
 

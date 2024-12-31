@@ -10,6 +10,8 @@ import ProductDetails from '@/components/Product/ProductDetails.vue'
 import CartComponent from '@/components/Cart/Cart.vue'
 import PaymentSuccess from '@/components/Cart/PaymentSuccess.vue'
 import PaymentCancel from '@/components/Cart/PaymentCancel.vue'
+import Orders from '@/components/Order/Orders.vue'
+import Support from '@/components/Support.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 
 const routes = [
@@ -70,6 +72,17 @@ const routes = [
     name: 'PaymentCancel',
     component: PaymentCancel,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/orders',
+    name: 'Orders',
+    component: Orders,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/support',
+    name: 'Support',
+    component: Support
   }
 ];
 

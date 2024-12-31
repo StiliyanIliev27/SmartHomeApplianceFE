@@ -193,9 +193,6 @@ export default {
     }
   },
   computed: {
-    isAuthenticated() {
-      return this.authStore.isAuthenticated
-    },
     totalPages() {
       return Math.max(1, Math.ceil(this.products.length / this.pageSize))
     },
@@ -238,7 +235,7 @@ export default {
     <!-- Navbar -->
     <div class="fixed top-0 w-full z-50 transition-all duration-300"
       :class="{ 'bg-transparent': !scrolled, 'shadow-lg backdrop-blur-md bg-white/90': scrolled }">
-      <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" @sign-out="handleSignOut" />
+      <NavBar :is-authenticated="authStore.isAuthenticated" :user="authStore.user" @sign-out="handleSignOut" />
     </div>
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 pt-24">
