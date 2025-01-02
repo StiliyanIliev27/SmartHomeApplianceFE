@@ -324,9 +324,6 @@ export default {
         }
     },
     computed: {
-        isAuthenticated() {
-            return this.authStore.isAuthenticated;
-        },
         userProfile() {
             return this.authStore.user || {
                 name: '',
@@ -371,7 +368,7 @@ export default {
         <!-- Fixed Header section -->
         <div class="fixed top-0 w-full z-50 transition-all duration-300"
             :class="{ 'bg-transparent': !scrolled, 'shadow-lg backdrop-blur-md bg-white/10': scrolled }">
-            <NavBar :is-authenticated="isAuthenticated" :user="authStore.user" @sign-out="handleSignOut"/>
+            <NavBar :is-authenticated="authStore.isAuthenticated" :user="authStore.user" @sign-out="handleSignOut"/>
         </div>
 
         <Chatbot :user="authStore.user" />

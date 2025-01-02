@@ -14,7 +14,8 @@ import {
     ShoppingBagIcon,
     HeartIcon,
     InformationCircleIcon,
-    XMarkIcon as XIcon
+    XMarkIcon as XIcon,
+    ClipboardDocumentListIcon
 } from '@heroicons/vue/24/outline'
 import { cartService } from '@/services/cartService'
 import cartApi from '@/api/cartApi'
@@ -39,7 +40,8 @@ export default {
         ShoppingBagIcon,
         HeartIcon,
         InformationCircleIcon,
-        XIcon
+        XIcon,
+        ClipboardDocumentListIcon
     },
     props: {
         isAuthenticated: Boolean,
@@ -64,11 +66,11 @@ export default {
                 { name: 'About', href: '/about', icon: InformationCircleIcon },
                 { name: 'Support', href: '/support', icon: PhoneIcon }
             ],
-            authenticatedNavigation: [
-                { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+            authenticatedNavigation: [             
                 { name: 'Products', href: '/shop', icon: ShoppingBagIcon },
-                { name: 'Wishlist', href: '/wishlist', icon: HeartIcon },
-                { name: 'Cart', href: '/cart', icon: ShoppingCartIcon, badge: '3' }
+                { name: 'My Orders', href: '/orders', icon: ClipboardDocumentListIcon },
+                { name: 'Cart', href: '/cart', icon: ShoppingCartIcon },
+                { name: 'Support', href: '/support', icon: PhoneIcon }
             ],
         }
     },
@@ -96,10 +98,15 @@ export default {
        async refreshCart() {
            try {
                const response = await cartApi.getCart();
-               this.authStore.user.cartProducts = response.data.result.cartProducts;
-               this.cartItems = response.data.result.cartProducts;
+               // Filter out products with quantity 0 or undefined
+               const validProducts = response.data.result.cartProducts.filter(product => product.quantity > 0);
+               this.authStore.user.cartProducts = validProducts;
+               this.cartItems = validProducts;
            } catch (error) {
                console.error('Error refreshing cart:', error);
+               // Reset cart items if there's an error
+               this.cartItems = [];
+               this.authStore.user.cartProducts = [];
            }
        },
        incrementQuantity(productId, currentQuantity, event) {
@@ -154,11 +161,18 @@ export default {
     },
     watch: {
         isAuthenticated(newVal) {
-            this.refreshCart();
+            if (newVal) {
+                this.refreshCart();
+            } else {
+                // Clear cart when logged out
+                this.cartItems = [];
+            }
         },
         user: {
             handler(newVal) {
-                this.refreshCart();
+                if (newVal) {
+                    this.refreshCart();
+                }
             },
             deep: true
         },
@@ -173,7 +187,6 @@ export default {
         userNavigation() {
             return [
                 { name: 'Your Profile', href: '/profile', icon: UserCircleIcon },
-                { name: 'My Orders', href: '/my-orders', icon: ShoppingBagIcon },
                 { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
                 { name: 'Sign out', href: '#', icon: ArrowRightStartOnRectangleIcon, actions: this.handleSignOut }
             ]
@@ -190,7 +203,9 @@ export default {
         }
     },
     async mounted() {
-        await this.refreshCart();
+        if (this.isAuthenticated) {
+            await this.refreshCart();
+        }
     },
     beforeDestroy() {
         if (this.cartHoverTimeout) {

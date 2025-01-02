@@ -7,9 +7,30 @@ import router from './router'
 import './assets/main.css'
 import Toast from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { 
+    faHome,
+    faShoppingBag,
+    faHeart,
+    faBell,
+    faCog,
+    faShoppingCart,
+    faHeadset
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const app = createApp(App)
 const pinia = createPinia()
+
+library.add(
+    faHome,
+    faShoppingBag,
+    faHeart,
+    faBell,
+    faCog,
+    faShoppingCart,
+    faHeadset
+)
 
 const options = {
     position: "top-right",
@@ -29,5 +50,6 @@ const options = {
 app.use(pinia)
 app.use(router)
 app.use(Toast, options)
+app.component('font-awesome-icon', FontAwesomeIcon)
 
 app.mount('#app')
