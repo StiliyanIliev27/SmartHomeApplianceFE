@@ -22,6 +22,8 @@
     "@vuelidate/validators": "^2.0.4",
     "axios": "^1.7.8",
     "chart.js": "^4.4.7",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "jwt-decode": "^4.0.0",
     "pinia": "^2.2.8",
     "vue": "^3.5.12",

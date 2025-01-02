@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth', {
             this.error = null
 
             try {
-                const { data: { result: { user, token } } } = await authApi.login(credentials)
+                const { data: { result: { user, token, isAdmin } } } = await authApi.login(credentials)
 
                 const decodedToken = jwtDecode(token)
                 const tokenExpiration = decodedToken.exp * 1000; // Времето на изтичане в милисекунди
@@ -48,7 +48,8 @@ export const useAuthStore = defineStore('auth', {
                     email: user.email,
                     name: `${user.firstName} ${user.lastName}`,
                     profilePictureUrl: user.profilePictureUrl,
-                    cartProducts: cartProducts ? cartProducts : []
+                    cartProducts: cartProducts ? cartProducts : [],
+                    isAdmin: isAdmin
                 }
 
                 this.isAuthenticated = true

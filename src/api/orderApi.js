@@ -1,11 +1,16 @@
 import baseApi from './baseApi'
 
 export const orderApi = {
-    createCheckoutSession: (promoCodePerc) => baseApi.post('/order/create-checkout-session', null, { 
+    getMyOrders: () => baseApi.get(`/order`),
+    createCheckoutSession: (discountPercentage, discountCode) => baseApi.post('/order/create-checkout-session', null, { 
         params: { 
-            promoCodePerc 
+            discountPercentage,
+            discountCode
         } 
+    }),
+    handleCancelledPayment: (orderId) => baseApi.post('/order/cancel', null, { 
+        params: { orderId } 
     })
-}
+}   
 
 export default orderApi

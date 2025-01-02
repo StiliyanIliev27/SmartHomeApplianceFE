@@ -131,7 +131,7 @@ export default {
       this.$router.push('/login')
     },
     async addToCart(productId, quantity, event) {
-      if (!this.isAuthenticated) {
+      if (!this.authStore.isAuthenticated) {
         this.$router.push({ name: 'Login', query: { redirect: this.$route.path } });
         return
       }
