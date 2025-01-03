@@ -20,8 +20,7 @@ export const useAuthStore = defineStore('auth', {
             try {
                 return await authApi.register(userData)
             } catch (error) {
-                this.error = error.response?.data?.message || 'Something went wrong'
-                throw error
+                throw new Error(error.response.data.errorMessages[0] || 'Registration failed');
             } finally {
                 this.loading = false
             }

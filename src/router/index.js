@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/useAuthStore'
 import HomeComponent from '../components/HomeComponent.vue';
 import LoginComponent from '../components/Authentication/LoginComponent.vue'
 import RegisterComponent from '@/components/Authentication/RegisterComponent.vue';
@@ -12,7 +13,15 @@ import PaymentSuccess from '@/components/Cart/PaymentSuccess.vue'
 import PaymentCancel from '@/components/Cart/PaymentCancel.vue'
 import Orders from '@/components/Order/Orders.vue'
 import Support from '@/components/Support.vue'
-import { useAuthStore } from '@/stores/useAuthStore'
+import AdminPanel from '@/components/Admin/AdminPanel.vue'
+
+export const menuItems = [
+  { path: '/admin/users', name: 'Users', icon: 'UserIcon' },
+  { path: '/admin/products', name: 'Products', icon: 'ProductIcon' },
+  { path: '/admin/orders', name: 'Orders', icon: 'OrderIcon' },
+  { path: '/admin/analytics', name: 'Analytics', icon: 'ChartBarIcon' },
+  { path: '/admin/settings', name: 'Settings', icon: 'CogIcon' }
+];
 
 const routes = [
   {
@@ -83,6 +92,12 @@ const routes = [
     path: '/support',
     name: 'Support',
     component: Support
+  },
+  {
+    path: '/admin',
+    name: 'AdminPanel',
+    component: AdminPanel,
+    meta: { requiresAuth: true, requiresAdmin: true }
   }
 ];
 
@@ -94,12 +109,15 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.isAuthenticated
+  const isAdmin = authStore.user?.isAdmin
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ 
       name: 'Login',
       query: { redirect: to.fullPath }
     })
+  } else if (to.meta.requiresAdmin && !isAdmin) {
+    next({ name: 'Landing Page' })
   } else {
     next()
   }

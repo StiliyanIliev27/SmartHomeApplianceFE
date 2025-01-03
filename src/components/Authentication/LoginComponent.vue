@@ -66,8 +66,13 @@ export default {
                     rememberMe: this.rememberMe
                 })
                 await this.$nextTick()
-                const redirect = this.$route.query.redirect || '/';
-                this.$router.push(redirect)
+                if(this.authStore.user.isAdmin){
+                    const redirect = this.$route.query.redirect || '/admin';
+                    this.$router.push(redirect)
+                } else {
+                    const redirect = this.$route.query.redirect || '/';
+                    this.$router.push(redirect)
+                }
                 
             } catch (error) {
                 this.error = error.response?.data.errorMessages[0] || 'Invalid email or password'

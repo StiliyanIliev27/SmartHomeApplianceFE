@@ -1,4 +1,7 @@
 <script>
+import { authApi } from '../../api/authApi'
+const CONFIRMATION_SUCCESS_MESSAGE = 'Email confirmed successfully. Your account is now activated.'
+
 export default {
     data() {
         return {
@@ -14,9 +17,8 @@ export default {
         if (token && userId) {
             try {
                 const response = await authApi.confirmEmail(token, userId);
-                if (response.data.statusCode !== 200) {
-                    const errorData = await response.data.errorMessages[0];
-                    throw new Error(errorData || 'Email confirmation failed');
+                if (response.data !== CONFIRMATION_SUCCESS_MESSAGE) {
+                    throw new Error(response);
                 }
                 this.isConfirming = false;
             } catch (error) {

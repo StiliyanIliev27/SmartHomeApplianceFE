@@ -187,7 +187,6 @@ export default {
         userNavigation() {
             return [
                 { name: 'Your Profile', href: '/profile', icon: UserCircleIcon },
-                { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
                 { name: 'Sign out', href: '#', icon: ArrowRightStartOnRectangleIcon, actions: this.handleSignOut }
             ]
         },
@@ -296,61 +295,75 @@ export default {
                         </router-link>
                     </div>
                 </div>
-                <div class="hidden md:ml-6 md:flex md:items-center">
-                    <template v-if="isAuthenticated">
-                        <button type="button"
-                            class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none">
-                            <BellIcon class="h-6 w-6" />
-                            <span v-if="notifications"
-                                class="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                                {{ notifications }}
-                            </span>
-                        </button>
+                <div class="flex items-center">
+                    <!-- Desktop Navigation -->
+                    <div class="hidden lg:flex lg:items-center lg:space-x-6">
+                        <template v-if="isAuthenticated">
+                            <!-- Notifications -->
+                            <button type="button"
+                                class="relative rounded-full bg-white p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <BellIcon class="h-5 w-5" />
+                                <span v-if="notifications"
+                                    class="absolute top-0 right-0 -mt-0.5 -mr-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 ring-2 ring-white text-xs font-bold text-white">
+                                    {{ notifications }}
+                                </span>
+                            </button>
 
-                        <Menu as="div" class="relative ml-3">
-                            <div>
-                                <MenuButton class="flex rounded-full bg-white text-sm focus:outline-none">
-                                    <img v-if="userProfilePicture" :src="user.profilePictureUrl"
-                                        class="h-8 w-8 rounded-full object-cover block" :alt="user?.name"
-                                        @error="handleImageError" />
-                                    <UserCircleIcon v-else class="h-8 w-8 text-gray-400" />
-                                </MenuButton>
+                            <!-- User Menu -->
+                            <Menu as="div" class="relative">
+                                <div>
+                                    <MenuButton class="flex rounded-full ring-2 ring-gray-200 hover:ring-indigo-500 transition-all focus:outline-none">
+                                        <img v-if="userProfilePicture" :src="user.profilePictureUrl"
+                                            class="h-8 w-8 rounded-full object-cover block" :alt="user?.name"
+                                            @error="handleImageError" />
+                                        <UserCircleIcon v-else class="h-8 w-8 text-gray-400" />
+                                    </MenuButton>
+                                </div>
+                                <transition enter-active-class="transition ease-out duration-200"
+                                    enter-from-class="transform opacity-0 scale-95"
+                                    enter-to-class="transform opacity-100 scale-100"
+                                    leave-active-class="transition ease-in duration-75"
+                                    leave-from-class="transform opacity-100 scale-100"
+                                    leave-to-class="transform opacity-0 scale-95">
+                                    <MenuItems
+                                        class="absolute right-0 z-10 mt-3 w-64 origin-top-right rounded-lg bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        <div class="px-4 py-3 border-b border-gray-100">
+                                            <p class="text-base font-semibold text-gray-900">{{ user.name }}</p>
+                                            <p class="text-sm text-gray-600 mt-1">{{ user.email }}</p>
+                                            <p class="text-sm text-gray-500 mt-1">{{ user.address }}</p>
+                                        </div>
+                                        <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }">
+                                        <a :href="item.href" @click.prevent="navigateTo(item.href)"
+                                            :class="[active ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700', 'flex items-center px-4 py-3 text-base hover:bg-indigo-50 hover:text-indigo-700 transition-colors']">
+                                            <component :is="item.icon" class="h-4 w-4 mr-3 text-gray-400" />
+                                            {{ item.name }}
+                                        </a>
+                                        </MenuItem>
+                                    </MenuItems>
+                                </transition>
+                            </Menu>
+
+                            <!-- Admin Panel Button -->
+                            <div v-if="user.isAdmin">
+                                <router-link to="/admin" 
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md
+                                    text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow-md transition-all duration-150
+                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Admin Panel
+                                </router-link>
                             </div>
-                            <transition enter-active-class="transition ease-out duration-200"
-                                enter-from-class="transform opacity-0 scale-95"
-                                enter-to-class="transform opacity-100 scale-100"
-                                leave-active-class="transition ease-in duration-75"
-                                leave-from-class="transform opacity-100 scale-100"
-                                leave-to-class="transform opacity-0 scale-95">
-                                <MenuItems
-                                    class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                    <div class="px-4 py-2 border-b">
-                                        <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
-                                        <p class="text-xs text-gray-500">{{ user.email }}</p>
-                                        <p class="text-xs text-gray-500 mt-1">{{ user.address }}</p>
-                                    </div>
-                                    <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }">
-                                    <a :href="item.href" @click.prevent="navigateTo(item.href)"
-                                        :class="[active ? 'bg-gray-100' : '', 'flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-50']">
-                                        <component :is="item.icon" class="h-5 w-5 mr-2 text-gray-500" />
-                                        {{ item.name }}
-                                    </a>
-                                    </MenuItem>
-                                </MenuItems>
-                            </transition>
-                        </Menu>
-                    </template>
-                    <template v-else>
-                        <router-link to="/login" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md 
-                            text-white bg-indigo-600 hover:bg-indigo-700">
-                            Sign in
-                        </router-link>
-                    </template>
-                </div>
+                        </template>
+                        <template v-else>
+                            <router-link to="/login" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md 
+                                text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow-md transition-all">
+                                Sign in
+                            </router-link>
+                        </template>
+                    </div>
 
-                <div class="flex items-center md:hidden">
+                    <!-- Mobile Menu Button -->
                     <button type="button" @click="mobileMenuOpen = !mobileMenuOpen"
-                        class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
+                        class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-500 ml-4">
                         <Bars3Icon v-if="!mobileMenuOpen" class="h-6 w-6" />
                         <XMarkIcon v-else class="h-6 w-6" />
                     </button>
@@ -358,25 +371,29 @@ export default {
             </div>
         </div>
 
-        <div v-if="mobileMenuOpen" class="md:hidden">
-            <div class="space-y-1 pb-3 pt-2">
+        <!-- Mobile Menu -->
+        <div v-if="mobileMenuOpen" class="lg:hidden">
+            <div class="space-y-1 px-2 pb-3 pt-2">
                 <router-link v-for="item in navigation" :key="item.name" :to="item.href"
-                    class="flex items-center px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
-                    active-class="text-indigo-600 bg-indigo-50">
-                    <component :is="item.icon" class="h-5 w-5 mr-2" />
-                    {{ item.name }}
-                    <span v-if="item.badge"
-                        class="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                        {{ item.badge }}
-                    </span>
+                    class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                    active-class="bg-indigo-50 text-indigo-600">
+                    <div class="flex items-center">
+                        <component :is="item.icon" class="h-5 w-5 mr-3" />
+                        {{ item.name }}
+                        <span v-if="item.badge"
+                            class="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                            {{ item.badge }}
+                        </span>
+                    </div>
                 </router-link>
             </div>
-            <template v-if="isAuthenticated">
-                <div class="border-t border-gray-200 pb-3 pt-4">
+            
+            <div class="border-t border-gray-200 pb-3 pt-4">
+                <template v-if="isAuthenticated">
                     <div class="flex items-center px-4">
                         <div class="flex-shrink-0">
                             <img v-if="userProfilePicture" :src="user.profilePictureUrl"
-                                class="h-10 w-10 rounded-full object-cover block" :alt="user.name" />
+                                class="h-10 w-10 rounded-full object-cover" :alt="user.name" />
                             <UserCircleIcon v-else class="h-10 w-10 text-gray-400" />
                         </div>
                         <div class="ml-3">
@@ -384,24 +401,38 @@ export default {
                             <div class="text-sm font-medium text-gray-500">{{ user.email }}</div>
                         </div>
                     </div>
-                    <div class="mt-3 space-y-1">
+                    <div class="mt-3 space-y-1 px-2">
+                        <router-link v-if="user?.isAdmin" to="/admin"
+                            class="block rounded-md px-3 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                Admin Panel
+                            </div>
+                        </router-link>
                         <router-link v-for="item in userNavigation" :key="item.name" :to="item.href"
                             @click="item.href === '#' ? handleSignOut() : null"
-                            class="flex items-center px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">
-                            <component :is="item.icon" class="h-5 w-5 mr-2" />
-                            {{ item.name }}
+                            class="block rounded-md px-3 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+                            <div class="flex items-center">
+                                <component :is="item.icon" class="h-5 w-5 mr-3" />
+                                {{ item.name }}
+                            </div>
                         </router-link>
                     </div>
-                </div>
-            </template>
-            <template v-else>
-                <div class="px-4 py-3">
-                    <router-link to="/login" class="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md 
-                        text-white bg-indigo-600 hover:bg-indigo-700 no-underline !text-white">
-                        Sign in
-                    </router-link>
-                </div>
-            </template>
+                </template>
+                <template v-else>
+                    <div class="px-4">
+                        <router-link to="/login" class="block w-full text-center px-4 py-2 text-sm font-medium rounded-md 
+                            text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                            Sign in
+                        </router-link>
+                    </div>
+                </template>
+            </div>
         </div>
     </nav>
 </template>
