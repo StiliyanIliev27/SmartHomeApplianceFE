@@ -7,7 +7,8 @@ export const authApi = {
     forgotPassword: (email) => baseApi.get('/auth/forgot-password', { params: { email } }),
     resetPassword: (newPassword, userId) => baseApi.patch('/auth/reset-password', { newPassword, userId }),
     confirmEmail: (token, userId) => baseApi.get('/email/confirm-email', { params: { token, userId } }),
-    getUser: () => baseApi.get('/auth/user')
+    getUser: () => baseApi.get('/auth/user'),
+    getCurrentUser: () => baseApi.get('/auth/current-user')
 }
 
 export default authApi

@@ -216,7 +216,7 @@ export default {
             }
         },
         async clickAddToCart(productId, quantity) {
-            if (!this.isAuthenticated) {
+            if (!this.authStore.isAuthenticated) {
                 this.goToLogin();
                 return;
             }

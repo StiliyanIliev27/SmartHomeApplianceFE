@@ -84,12 +84,23 @@ export const useAuthStore = defineStore('auth', {
 
             // Проверка за валидност на токена
             if (token && tokenExpiration && currentTime < tokenExpiration) {
-                this.token = token
-                this.isAuthenticated = true
-                this.user = user
-                // Можете да извлечете потребителските данни от API, ако е необходимо
+                try {
+                    // Fetch latest user data to check current role
+                    const { data: { result: { isAdmin } } } = await authApi.getCurrentUser()
+                    
+                    this.token = token
+                    this.isAuthenticated = true
+                    this.user = {
+                        ...user,
+                        isAdmin: isAdmin // Update admin status with latest from server
+                    }
+                    localStorage.setItem('user', JSON.stringify(this.user))
+                } catch (error) {
+                    console.error('Error fetching current user:', error)
+                    this.logout()
+                }
             } else {
-                this.logout(); // Изтриване на токена, ако е изтекъл
+                this.logout()
             }
         },
 

@@ -1,8 +1,6 @@
 <script setup>
-import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter } from 'vue-router'
 
-const authStore = useAuthStore()
 const router = useRouter()
 
 const goToHome = () => {

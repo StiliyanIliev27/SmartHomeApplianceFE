@@ -14,6 +14,7 @@ import PaymentCancel from '@/components/Cart/PaymentCancel.vue'
 import Orders from '@/components/Order/Orders.vue'
 import Support from '@/components/Support.vue'
 import AdminPanel from '@/components/Admin/AdminPanel.vue'
+import AdminUsers from '@/components/Admin/AdminUsers.vue'
 
 export const menuItems = [
   { path: '/admin/users', name: 'Users', icon: 'UserIcon' },
@@ -98,6 +99,12 @@ const routes = [
     name: 'AdminPanel',
     component: AdminPanel,
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/users',
+    name: 'AdminUsers',
+    component: AdminUsers,
+    meta: { requiresAuth: true, requiresAdmin: true }
   }
 ];
 
@@ -106,8 +113,12 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  
+  // Initialize auth state from storage before checking
+  await authStore.initializeFromStorage()
+  
   const isAuthenticated = authStore.isAuthenticated
   const isAdmin = authStore.user?.isAdmin
 

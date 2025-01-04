@@ -31,7 +31,7 @@ const props = defineProps({
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                 <div class="relative">
-                    <img :src="authStore.user?.profilePictureUrl || '/default-avatar.png'" :alt="authStore.user?.name"
+                    <img :src="authStore.user?.profilePictureUrl || '../../public/avatar-man-profile-image.png'" :alt="authStore.user?.name"
                         class="w-16 sm:w-20 h-16 sm:h-20 rounded-2xl object-cover shadow-lg ring-4 ring-emerald-100">
                     <div class="absolute -bottom-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white">
                     </div>

@@ -1,19 +1,26 @@
 <script setup>
 import { menuItems } from '@/router/index.js';
 import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 const route = useRoute()
+const router = useRouter()
 
 const isActiveRoute = (path) => {
     return route.path === path
 }
+
+const goToAdminPanel = () => {
+    router.push('/admin')
+}
+
 </script>
 
 <template>
     <aside class="fixed inset-y-0 left-0 bg-white shadow-lg max-h-screen w-60">
         <div class="flex flex-col justify-between h-full">
             <div class="flex-grow">
-                <div class="px-4 py-6 text-center border-b">
+                <div @click="goToAdminPanel" class="px-4 py-6 text-center border-b cursor-pointer">
                     <h1 class="text-xl font-bold leading-none text-indigo-700">
                         <span class="text-2xl">✨</span> Admin Panel
                     </h1>

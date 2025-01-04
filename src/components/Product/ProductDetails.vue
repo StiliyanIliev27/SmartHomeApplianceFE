@@ -78,7 +78,7 @@ export default {
     methods: {
         async addToCart(productId, quantity) {
             try {
-                if(!this.isAuthenticated)
+                if(!this.authStore.isAuthenticated)
                     return this.$router.push({ name: 'Login', query: { redirect: this.$route.path } });
                 this.showAddedAnimation = true;
                 await cartService.addToCart(productId, quantity);
@@ -141,7 +141,7 @@ export default {
             this.editingReview = null;
         },
         async updateReview(review) {
-            if (!this.isAuthenticated) {
+            if (!this.authStore.isAuthenticated) {
                 this.toast.error('Please login to edit a review', {
                     position: 'top-right',
                     duration: 3000
@@ -189,7 +189,7 @@ export default {
             }
         },
         async deleteReview(reviewId) {
-            if (!this.isAuthenticated) {
+            if (!this.authStore.isAuthenticated) {
                 this.toast.error('Please login to delete a review', {
                     position: 'top-right',
                     duration: 3000
@@ -214,7 +214,7 @@ export default {
             }
         },
         async submitReview() {
-            if (!this.isAuthenticated) {
+            if (!this.authStore.isAuthenticated) {
                 this.toast.error('Please login to submit a review', {
                     position: 'top-right',
                     duration: 3000

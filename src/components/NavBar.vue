@@ -5,7 +5,6 @@ import {
     Bars3Icon,
     XMarkIcon,
     BellIcon,
-    Cog6ToothIcon,
     HomeIcon,
     ShoppingCartIcon,
     TagIcon,
