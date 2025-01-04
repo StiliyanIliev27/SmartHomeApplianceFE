@@ -1,82 +1,86 @@
-# HomeCraft - Smart Home E-Commerce Platform
+# 🏠 HomeCraft - Smart Home E-Commerce Platform
+
+<div align="center">
+  <h3>🌟 Where Innovation Meets Comfort 🌟</h3>
+</div>
 
 HomeCraft is a modern e-commerce platform for smart home devices built with Vue.js and ASP.NET Web API. The platform offers an intuitive user interface, AI chatbot assistant, and complete online shopping functionality.
 
-![HomeCraft Screenshot](path-to-screenshot.png)
+![Home-Page](https://github.com/user-attachments/assets/d4c0d272-47c8-4c6c-8815-b7831df05cf7)
 
-## 🚀 Key Features
+## ✨ Key Features
 
-- **Authentication & Authorization**
-  - JWT-based authentication
-  - Role-based access (User/Admin)
-  - Email confirmation
-  - Password recovery
+### 🔐 Authentication & Authorization
+  - 🎫 JWT-based authentication
+  - 👥 Role-based access (User/Admin)
+  - ✉️ Email confirmation
+  - 🔑 Password recovery
 
-- **Shopping Experience**
-  - Product catalog
-  - Shopping cart
-  - Stripe payment integration
-  - Order tracking
+### 🛍️ Shopping Experience
+  - 📱 Product catalog
+  - 🛒 Shopping cart
+  - 💳 Stripe payment integration
+  - 📦 Order tracking
 
-- **Admin Features**
-  - Product management
-  - User management
-  - Analytics dashboard
-  - PDF report generation
+### 👨‍💼 Admin Features
+  - 📝 Product management
+  - 👥 User management
+  - 📊 Analytics dashboard
+  - 📄 PDF report generation
 
-- **Additional Features**
-  - AI chatbot assistant
-  - Promotional offers
-  - Responsive design
-  - Rating system
+### 🎯 Additional Features
+  - 🤖 AI chatbot assistant
+  - 🏷️ Promotional offers
+  - 📱 Responsive design
+  - ⭐ Rating system
 
-## 🛠️ Tech Stack
+## 💻 Tech Stack
 
-### Frontend
-- Vue.js 3
-- Pinia (State Management)
-- Tailwind CSS
-- Headless UI
-- Vue Router
-- Axios
-- Chart.js
-- jsPDF
+### 🎨 Frontend
+- ⚡ Vue.js 3
+- 🏪 Pinia (State Management)
+- 🎭 Tailwind CSS
+- 🎯 Headless UI
+- 🛣️ Vue Router
+- 🔄 Axios
+- 📊 Chart.js
+- 📄 jsPDF
 
-### Backend
-- ASP.NET Web API
-- Entity Framework Core
-- SQL Server
-- JWT Authentication
-- Stripe API
+### ⚙️ Backend
+- 🔧 ASP.NET Web API
+- 🗃️ Entity Framework Core
+- 💾 SQL Server
+- 🔒 JWT Authentication
+- 💳 Stripe API
 
-## 📋 Prerequisites
+## 📌 Prerequisites
 
-- Node.js (v14+)
-- npm or yarn
-- .NET 8.0
-- SQL Server
+- 📦 Node.js (v14+)
+- 📥 npm or yarn
+- 🎯 .NET 8.0
+- 🗄️ SQL Server
 
-## ⚙️ Installation
+## 🚀 Installation
 
-1. Clone the repositories:
+1. 📥 Clone the repositories:
 ```bash
 git clone https://github.com/StiliyanIliev27/SmartHomeApplianceFE
 git clone https://github.com/StiliyanIliev27/SmartHomeApplianceBE
 ```
 
-2. Frontend setup:
+2. 🎨 Frontend setup:
 ```bash
 cd SmartHomeApplianceFE
 npm install
 ```
 
-3. Backend setup:
+3. ⚙️ Backend setup:
 ```bash
 cd SmartHomeApplianceBE
 dotnet restore
 ```
 
-4. Run the application (before running, please see the next steps - Configuration and Required Services, so the application run flow is setup correctly):
+4. 🏃‍♂️ Run the application:
 
 Frontend:
 ```bash
@@ -88,18 +92,18 @@ Backend:
 dotnet run
 ```
 
+## ⚙️ Configuration
 
-## 🔧 Configuration
-
-### Frontend Environment Variables
+### 🎨 Frontend Environment Variables
 Create a `.env` file in the frontend root directory:
 ```
-VITE_STRIPE_PUBLIC_KEY=pk_test_51PLsAdCeu6PQ0cnAbXxWH5VXyiNJDlm1tEVmV3AW0aUMeLe6FTUlNkzbO74vMttvH8WDWBCfykz0FhEvPtSsCzPS00mhnowUTF
+VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key
 ```
 
-### Backend Configuration
-First open .sln file in Visual Studio
-Then open `secrets.json`, by clicking the right mouse button on SmartHomeAppliance.API and then "Manage User Secrets", file with the following structure (replace with your values):
+### 🔧 Backend Configuration
+1. Open `.sln` file in Visual Studio
+2. Right-click on SmartHomeAppliance.API → Manage User Secrets
+3. Add the following structure:
 ```json
 {
   "Stripe": {
@@ -132,47 +136,51 @@ Then open `secrets.json`, by clicking the right mouse button on SmartHomeApplian
 }
 ```
 
-### Required Services
-1. **SQL Server**
-   - Install SQL Server
-   - Create a database named "SmartHomeApplianceDatabase"
+## 🔌 Required Services
 
-2. **Email Service**
-   - Gmail account with App-specific password
-   - Configure SMTP settings in secrets.json
+### 1. 💾 SQL Server
+- Install SQL Server
+- Create database "SmartHomeApplianceDatabase"
 
-3. **Stripe Account**
-   - Create a Stripe account
-   - Configure webhook endpoints
-   - Add Stripe keys to configuration
+### 2. 📧 Email Service
+- Gmail account setup
+- SMTP configuration
 
-4. **Cloudinary Account**
-   - Set up a Cloudinary account
-   - Configure Cloudinary credentials for image management
-  
+### 3. 💳 Stripe Account
+- Account setup
+- Webhook configuration
+- API keys
 
-## 📝 License
+### 4. ☁️ Cloudinary Account
+- Account setup
+- Media management credentials
 
-[MIT](LICENSE)
+## 📄 License
+
+[MIT](LICENSE) © Stiliyan Iliev
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these guidelines:
-- Fork the repository.
-- Create a new branch: `git checkout -b feature-name`.
-- Make your changes and commit them: `git commit -m 'Add feature'`.
-- Push to the branch: `git push origin feature-name`.
-- Submit a pull request..
+We ❤️ contributions! Here's how:
+1. 🍴 Fork the repository
+2. 🌿 Create feature branch
+3. 💻 Make changes
+4. 🚀 Submit PR
 
-## 📧 Contact
+## 📞 Contact
 
-Stiliyan Iliev - stiliyaniliev2705@gmail.com
+👨‍💻 **Stiliyan Iliev**
+- 📧 Email: stiliyaniliev2705@gmail.com
+- 🌐 GitHub: [@StiliyanIliev27](https://github.com/StiliyanIliev27)
 
-Project Link: https://github.com/StiliyanIliev27/SmartHomeApplianceFE
+## 💝 Acknowledgments
 
-## 🙏 Acknowledgments
+- 🎨 [Tailwind CSS](https://tailwindcss.com)
+- ⚡ [Vue.js](https://vuejs.org)
+- 🔧 [ASP.NET](https://dotnet.microsoft.com/apps/aspnet)
+- 💳 [Stripe](https://stripe.com)
 
-- [Tailwind CSS](https://tailwindcss.com)
-- [Vue.js](https://vuejs.org)
-- [ASP.NET](https://dotnet.microsoft.com/apps/aspnet)
-- [Stripe](https://stripe.com)
+---
+<div align="center">
+  Made with ❤️ by Stiliyan Iliev
+</div>
