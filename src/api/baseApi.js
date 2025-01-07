@@ -16,6 +16,12 @@ baseApi.interceptors.request.use(config => {
        localStorage.removeItem('token')
        localStorage.removeItem('tokenExpiration')
    }
+
+   // Remove `Content-Type` header for FormData requests
+   if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+}
+
    return config
 })
 
