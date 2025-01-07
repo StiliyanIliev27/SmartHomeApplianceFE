@@ -156,8 +156,7 @@ VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key
 - Media management credentials
 
 ## 📄 License
-
-[MIT](LICENSE) © Stiliyan Iliev
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details. 📜
 
 ## 🤝 Contributing
 
