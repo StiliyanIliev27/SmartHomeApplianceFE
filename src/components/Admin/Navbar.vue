@@ -1,10 +1,12 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 const router = useRouter()
 const isProfileMenuOpen = ref(false)
 const isNotificationsOpen = ref(false)
+const authStore = useAuthStore()
 
 const goToHome = () => {
     router.push('/')
@@ -15,6 +17,11 @@ const toggleProfileMenu = () => {
     if (isProfileMenuOpen.value) {
         isNotificationsOpen.value = false
     }
+}
+
+const signOut = () => {
+    authStore.logout()
+    router.push('/login')
 }
 
 const toggleNotifications = () => {
@@ -98,7 +105,7 @@ const toggleNotifications = () => {
                             Account Settings
                         </a>
                         <div class="border-t border-gray-100 my-1"></div>
-                        <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200">
+                        <a @click="signOut" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 cursor-pointer">
                             Sign Out
                         </a>
                     </div>

@@ -1,11 +1,13 @@
 <script>
 import { ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { useChatStore } from '@/stores/useChatStore'
+import chatApi from '@/api/chatApi'
 
 export default {
     data() {
         return {
             currentMessage: '',
+            isTyping: false
         }
     },
     props: {
@@ -51,7 +53,7 @@ export default {
                 })
             }
         },
-        sendMessage() {
+        async sendMessage() {
             if (!this.currentMessage.trim()) return
 
             // Add user message
@@ -60,12 +62,13 @@ export default {
                 sender: 'user'
             })
 
+            const userMessage = this.currentMessage
             // Clear input
             this.currentMessage = ''
 
-            // Simulate bot response
+            // Show typing indicator
             this.chatStore.addMessage({
-                text: "Thank you for your message. I'm processing your request...",
+                text: "Thinking...",
                 sender: 'bot',
                 loading: true
             })
@@ -78,17 +81,39 @@ export default {
                 }
             })
 
-            // Simulate API call delay
-            setTimeout(() => {
-                // Remove loading message
+            try {
+                // Call OpenAI API
+                const response = await chatApi.sendMessage(userMessage)
+
+                // Remove typing indicator
                 this.chatStore.messages.pop()
-                
-                // Add actual response
+
+                // Add AI response
                 this.chatStore.addMessage({
-                    text: "I understand you're interested in our smart home solutions. How can I help you today?",
+                    text: response.data.response,
                     sender: 'bot'
                 })
-            }, 1500)
+
+            } catch (error) {
+                console.error('Error getting AI response:', error)
+                
+                // Remove typing indicator
+                this.chatStore.messages.pop()
+                
+                // Add error message
+                this.chatStore.addMessage({
+                    text: "I apologize, but I'm having trouble connecting right now. Please try again later.",
+                    sender: 'bot'
+                })
+            }
+
+            // Scroll to bottom again after new message
+            this.$nextTick(() => {
+                const chatContainer = this.$refs.chatContainer
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight
+                }
+            })
         }
     }
 }

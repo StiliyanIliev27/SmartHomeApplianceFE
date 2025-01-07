@@ -55,7 +55,30 @@ export default {
     data() {
         return {
             mobileMenuOpen: false,
-            notifications: 3,
+            notifications: [
+                {
+                    id: 1,
+                    title: 'Order Shipped',
+                    message: 'Your order #1234 has been shipped',
+                    time: '1 hour ago',
+                    read: false
+                },
+                {
+                    id: 2, 
+                    title: 'Price Drop Alert',
+                    message: 'An item in your wishlist is now on sale',
+                    time: '2 hours ago',
+                    read: false
+                },
+                {
+                    id: 3,
+                    title: 'New Product Available',
+                    message: 'Check out our latest home decor collection',
+                    time: '1 day ago',
+                    read: true
+                }
+            ],
+            showNotifications: false,
             showCartPreview: false,
             cartHoverTimeout: null,
             cartItems: [],
@@ -69,7 +92,8 @@ export default {
                 { name: 'Products', href: '/shop', icon: ShoppingBagIcon },
                 { name: 'My Orders', href: '/orders', icon: ClipboardDocumentListIcon },
                 { name: 'Cart', href: '/cart', icon: ShoppingCartIcon },
-                { name: 'Support', href: '/support', icon: PhoneIcon }
+                { name: 'Support', href: '/support', icon: PhoneIcon },
+                { name: 'About', href: '/about', icon: InformationCircleIcon },
             ],
         }
     },
@@ -156,6 +180,15 @@ export default {
             this.cartHoverTimeout = setTimeout(() => {
                 this.showCartPreview = false;
             }, 300);
+        },
+        toggleNotifications() {
+            this.showNotifications = !this.showNotifications;
+        },
+        markAsRead(notificationId) {
+            const notification = this.notifications.find(n => n.id === notificationId);
+            if (notification) {
+                notification.read = true;
+            }
         }
     },
     watch: {
@@ -198,6 +231,9 @@ export default {
         },
         cartTotal() {
             return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+        },
+        unreadNotificationsCount() {
+            return this.notifications.filter(n => !n.read).length;
         }
     },
     async mounted() {
@@ -299,14 +335,39 @@ export default {
                     <div class="hidden lg:flex lg:items-center lg:space-x-6">
                         <template v-if="isAuthenticated">
                             <!-- Notifications -->
-                            <button type="button"
-                                class="relative rounded-full bg-white p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <BellIcon class="h-5 w-5" />
-                                <span v-if="notifications"
-                                    class="absolute top-0 right-0 -mt-0.5 -mr-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 ring-2 ring-white text-xs font-bold text-white">
-                                    {{ notifications }}
-                                </span>
-                            </button>
+                            <div class="relative">
+                                <button type="button" @click="toggleNotifications"
+                                    class="relative rounded-full bg-white p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <BellIcon class="h-5 w-5" />
+                                    <span v-if="unreadNotificationsCount"
+                                        class="absolute top-0 right-0 -mt-0.5 -mr-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 ring-2 ring-white text-xs font-bold text-white">
+                                        {{ unreadNotificationsCount }}
+                                    </span>
+                                </button>
+
+                                <!-- Notifications Dropdown -->
+                                <div v-if="showNotifications" 
+                                    class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                    <div class="p-4">
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Notifications</h3>
+                                        <div v-if="notifications.length === 0" class="py-4 text-center text-gray-500">
+                                            No notifications at the moment
+                                        </div>
+                                        <div v-else class="space-y-3 max-h-96 overflow-y-auto">
+                                            <div v-for="notification in notifications" 
+                                                :key="notification.id"
+                                                :class="['p-3 rounded-lg transition-colors', notification.read ? 'bg-gray-50' : 'bg-indigo-50']"
+                                                @click="markAsRead(notification.id)">
+                                                <div class="flex justify-between items-start">
+                                                    <h4 class="text-sm font-medium text-gray-900">{{ notification.title }}</h4>
+                                                    <span class="text-xs text-gray-500">{{ notification.time }}</span>
+                                                </div>
+                                                <p class="text-sm text-gray-600 mt-1">{{ notification.message }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- User Menu -->
                             <Menu as="div" class="relative">

@@ -22,6 +22,8 @@ export const useChatStore = defineStore('chat', {
                 seen: this.isChatOpen
             })
         },
+
+        
         
         toggleChat() {
             this.isChatOpen = !this.isChatOpen

@@ -18,13 +18,12 @@ import AdminUsers from '@/components/Admin/AdminUsers.vue'
 import AdminProducts from '@/components/Admin/AdminProducts.vue'
 import AdminOrders from '@/components/Admin/AdminOrders.vue'
 import AdminOrderDetails from '@/components/Admin/AdminOrderDetails.vue'
+import About from '@/components/About.vue'
 
 export const menuItems = [
   { path: '/admin/users', name: 'Users', icon: 'UserIcon' },
   { path: '/admin/products', name: 'Products', icon: 'ProductIcon' },
-  { path: '/admin/orders', name: 'Orders', icon: 'OrderIcon' },
-  { path: '/admin/analytics', name: 'Analytics', icon: 'ChartBarIcon' },
-  { path: '/admin/settings', name: 'Settings', icon: 'CogIcon' }
+  { path: '/admin/orders', name: 'Orders', icon: 'OrderIcon' }
 ];
 
 const routes = [
@@ -96,6 +95,11 @@ const routes = [
     path: '/support',
     name: 'Support',
     component: Support
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: About
   },
   {
     path: '/admin',
