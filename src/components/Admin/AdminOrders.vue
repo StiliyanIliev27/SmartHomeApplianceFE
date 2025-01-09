@@ -9,7 +9,6 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const orders = ref([])
 const searchQuery = ref('')
-const showAddOrderDialog = ref(false)
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const showEditStatusDialog = ref(false)
@@ -75,8 +74,8 @@ onMounted(() => {
       <div class="p-2 sm:p-4 lg:p-8">
         <SearchComponent title="Orders Management"
           description="Manage your orders, track status and process customer orders."
-          v-model:searchQuery="searchQuery" :isUserPage="false" buttonText="Add Order"
-          placeholder="Search orders..." @buttonClick="showAddOrderDialog = true" />
+          v-model:searchQuery="searchQuery" :isUserPage="false"
+          placeholder="Search orders..."/>
 
         <!-- Mobile View Cards -->
         <div class="lg:hidden mt-4 space-y-4">

@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', {
             this.error = null
 
             try {
-                const { data: { result: { user, token, isAdmin } } } = await authApi.login(credentials)
+                const { data: { result: { user, token, isAdmin, isTechnician } } } = await authApi.login(credentials)
 
                 const decodedToken = jwtDecode(token)
                 const tokenExpiration = decodedToken.exp * 1000; // Времето на изтичане в милисекунди
@@ -48,7 +48,8 @@ export const useAuthStore = defineStore('auth', {
                     name: `${user.firstName} ${user.lastName}`,
                     profilePictureUrl: user.profilePictureUrl,
                     cartProducts: cartProducts ? cartProducts : [],
-                    isAdmin: isAdmin
+                    isAdmin,
+                    isTechnician
                 }
 
                 this.isAuthenticated = true
@@ -86,13 +87,14 @@ export const useAuthStore = defineStore('auth', {
             if (token && tokenExpiration && currentTime < tokenExpiration) {
                 try {
                     // Fetch latest user data to check current role
-                    const { data: { result: { isAdmin } } } = await authApi.getCurrentUser()
+                    const { data: { result: { isAdmin, isTechnician } } } = await authApi.getCurrentUser()
                     
                     this.token = token
                     this.isAuthenticated = true
                     this.user = {
                         ...user,
-                        isAdmin: isAdmin // Update admin status with latest from server
+                        isAdmin,
+                        isTechnician
                     }
                     localStorage.setItem('user', JSON.stringify(this.user))
                 } catch (error) {
@@ -119,6 +121,14 @@ export const useAuthStore = defineStore('auth', {
             localStorage.removeItem('token')
             localStorage.removeItem('tokenExpiration')
             localStorage.removeItem('user')
+        },
+
+        updateUserData(userData) {
+            this.user = {
+                ...this.user,
+                ...userData
+            };
+            localStorage.setItem('user', JSON.stringify(this.user));
         }
     }
 })

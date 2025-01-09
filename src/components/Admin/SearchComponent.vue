@@ -67,7 +67,7 @@ const handleButtonClick = () => {
                 <span class="ml-2 text-sm lg:text-base text-gray-700">Show only active users</span>
             </label>
         </div>
-        <button 
+        <button v-if="buttonText"
             @click="handleButtonClick"
             class="w-full lg:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
         >

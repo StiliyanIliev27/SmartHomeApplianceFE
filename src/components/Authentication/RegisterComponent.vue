@@ -18,18 +18,37 @@ export default {
             showConfirmPassword: false,
             isLoading: false,
             previewImage: null,
+            bulgarianCities: [
+                'Sofia',
+                'Plovdiv', 
+                'Varna',
+                'Burgas',
+                'Ruse',
+                'Stara Zagora',
+                'Pleven',
+                'Sliven',
+                'Dobrich',
+                'Shumen'
+            ],
             form: {
                 firstName: '',
                 lastName: '',
                 email: '',
                 password: '',
                 confirmPassword: '',
-                profilePicture: null
+                profilePicture: null,
+                isTechnician: false,
+                phoneNumber: '',
+                city: ''
             },
             errors: {
+                firstName: '',
+                lastName: '',
                 email: '',
                 password: '',
                 confirmPassword: '',
+                phoneNumber: '',
+                city: '',
                 general: ''
             },
             validFields: {
@@ -37,18 +56,42 @@ export default {
                 lastName: false,
                 email: false,
                 password: false,
-                confirmPassword: false
+                confirmPassword: false,
+                phoneNumber: false,
+                city: false
             }
         }
     },
     methods: {
         validateFirstName() {
-            this.validFields.firstName = this.form.firstName.length > 2;
-            this.errors.firstName = 'First name must be at least 3 characters long';
+            this.errors.firstName = '';
+            if (!this.form.firstName) {
+                this.errors.firstName = 'First name is required';
+                this.validFields.firstName = false;
+                return false;
+            }
+            if (this.form.firstName.length < 3) {
+                this.errors.firstName = 'First name must be at least 3 characters long';
+                this.validFields.firstName = false;
+                return false;
+            }
+            this.validFields.firstName = true;
+            return true;
         },
         validateLastName() {
-            this.validFields.lastName = this.form.lastName.length > 2;
-            this.errors.lastName = 'Last name must be at least 3 characters long';
+            this.errors.lastName = '';
+            if (!this.form.lastName) {
+                this.errors.lastName = 'Last name is required';
+                this.validFields.lastName = false;
+                return false;
+            }
+            if (this.form.lastName.length < 3) {
+                this.errors.lastName = 'Last name must be at least 3 characters long';
+                this.validFields.lastName = false;
+                return false;
+            }
+            this.validFields.lastName = true;
+            return true;
         },
         validateEmail() {
             this.errors.email = '';
@@ -68,6 +111,11 @@ export default {
         },
         validatePassword() {
             this.errors.password = '';
+            if (!this.form.password) {
+                this.errors.password = 'Password is required';
+                this.validFields.password = false;
+                return false;
+            }
             if (this.form.password.length < 8) {
                 this.errors.password = 'Password must be at least 8 characters long';
                 this.validFields.password = false;
@@ -88,6 +136,11 @@ export default {
         },
         validateConfirmPassword() {
             this.errors.confirmPassword = '';
+            if (!this.form.confirmPassword) {
+                this.errors.confirmPassword = 'Please confirm your password';
+                this.validFields.confirmPassword = false;
+                return false;
+            }
             if (this.form.password !== this.form.confirmPassword) {
                 this.errors.confirmPassword = 'Passwords do not match';
                 this.validFields.confirmPassword = false;
@@ -96,66 +149,126 @@ export default {
             this.validFields.confirmPassword = true;
             return true;
         },
+        validatePhoneNumber() {
+            this.errors.phoneNumber = '';
+            const phoneRegex = /^[0-9]{10}$/;
+            if (this.form.isTechnician && !this.form.phoneNumber) {
+                this.errors.phoneNumber = 'Phone number is required for technicians';
+                this.validFields.phoneNumber = false;
+                return false;
+            }
+            if (this.form.isTechnician && !phoneRegex.test(this.form.phoneNumber)) {
+                this.errors.phoneNumber = 'Please enter a valid 10-digit phone number';
+                this.validFields.phoneNumber = false;
+                return false;
+            }
+            this.validFields.phoneNumber = true;
+            return true;
+        },
+        validateCity() {
+            this.errors.city = '';
+            if (this.form.isTechnician && !this.form.city) {
+                this.errors.city = 'City is required for technicians';
+                this.validFields.city = false;
+                return false;
+            }
+            this.validFields.city = true;
+            return true;
+        },
         handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    this.errors.general = 'Please upload an image file';
+                    return;
+                }
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    this.errors.general = 'Image size should not exceed 5MB';
+                    return;
+                }
                 this.form.profilePicture = file;
+                if (this.previewImage) {
+                    URL.revokeObjectURL(this.previewImage); // Clean up previous URL
+                }
                 this.previewImage = URL.createObjectURL(file);
             }
         },
         removeImage() {
+            if (this.previewImage) {
+                URL.revokeObjectURL(this.previewImage); // Clean up URL
+            }
             this.form.profilePicture = null;
             this.previewImage = null;
             const input = document.getElementById('profilePicture');
             if (input) input.value = '';
         },
         async handleSubmit() {
-            if (!this.validateEmail() || !this.validatePassword() || !this.validateConfirmPassword()) {
+            // Validate all fields
+            const isFirstNameValid = this.validateFirstName();
+            const isLastNameValid = this.validateLastName();
+            const isEmailValid = this.validateEmail();
+            const isPasswordValid = this.validatePassword();
+            const isConfirmPasswordValid = this.validateConfirmPassword();
+            
+            if (!isFirstNameValid || !isLastNameValid || !isEmailValid || 
+                !isPasswordValid || !isConfirmPasswordValid) {
                 return;
             }
+
+            if (this.form.isTechnician) {
+                const isPhoneValid = this.validatePhoneNumber();
+                const isCityValid = this.validateCity();
+                if (!isPhoneValid || !isCityValid) {
+                    return;
+                }
+            }
+
             this.isLoading = true;
+            this.errors.general = '';
 
             try {
-                const userData = {
-                    firstName: this.form.firstName,
-                    lastName: this.form.lastName,
-                    email: this.form.email,
-                    password: this.form.password,
-                    profilePicture: this.form.profilePicture
-                };
-
                 const formData = new FormData();
-                formData.append('firstName', userData.firstName);
-                formData.append('lastName', userData.lastName);
-                formData.append('email', userData.email);
-                formData.append('password', userData.password);
+                formData.append('firstName', this.form.firstName.trim());
+                formData.append('lastName', this.form.lastName.trim());
+                formData.append('email', this.form.email.trim());
+                formData.append('password', this.form.password);
+                formData.append('isTechnician', this.form.isTechnician);
 
-                if (userData.profilePicture) {
-                    formData.append('profilePicture', userData.profilePicture);
+                if (this.form.isTechnician) {
+                    formData.append('phoneNumber', this.form.phoneNumber.trim());
+                    formData.append('city', this.form.city);
+                }
+
+                if (this.form.profilePicture) {
+                    formData.append('profilePicture', this.form.profilePicture);
                 }
 
                 const response = await this.authStore.registerAsync(formData);
 
-                if (response.status === 400 || response.status === 500) {
+                if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.errorMessages[0] || 'Registration failed');
+                    throw new Error(errorData.errorMessages?.[0] || 'Registration failed');
                 }
 
-                const data = response.data;
-                console.log('Registration successful:', data);
-
-                localStorage.setItem('pendingConfirmationEmail', this.form.email);
-
+                localStorage.setItem('pendingConfirmationEmail', this.form.email.trim());
                 this.$router.push('/confirm-email-pending');
             } catch (error) {
                 console.error('Registration error:', error);
-                this.errors.general = error.message;
+                this.errors.general = error.message || 'An unexpected error occurred';
             } finally {
                 this.isLoading = false;
             }
         },
         goToLogin() {
             this.$router.push('/login');
+        }
+    },
+    beforeUnmount() {
+        // Clean up any object URLs when component is destroyed
+        if (this.previewImage) {
+            URL.revokeObjectURL(this.previewImage);
         }
     }
 }
@@ -204,6 +317,7 @@ export default {
                                             clip-rule="evenodd" />
                                     </svg>
                                 </div>
+                                <p v-if="errors.firstName" class="mt-2 text-sm text-red-600">{{ errors.firstName }}</p>
                             </div>
 
                             <div class="relative group">
@@ -224,6 +338,7 @@ export default {
                                             clip-rule="evenodd" />
                                     </svg>
                                 </div>
+                                <p v-if="errors.lastName" class="mt-2 text-sm text-red-600">{{ errors.lastName }}</p>
                             </div>
                         </div>
 
@@ -362,6 +477,55 @@ export default {
                             </div>
                         </div>
 
+                        <div class="relative">
+                            <label class="flex items-center space-x-3 mb-4">
+                                <input type="checkbox" 
+                                       v-model="form.isTechnician"
+                                       class="form-checkbox h-5 w-5 text-emerald-600 transition duration-150 ease-in-out" />
+                                <span class="text-sm font-medium text-gray-700">Register as a Technician</span>
+                            </label>
+
+                            <template v-if="form.isTechnician">
+                                <div class="space-y-4 p-4 bg-emerald-50 rounded-lg">
+                                    <div class="relative">
+                                        <label for="phoneNumber" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
+                                        <div class="mt-1">
+                                            <input v-model="form.phoneNumber"
+                                                   @blur="validatePhoneNumber"
+                                                   id="phoneNumber"
+                                                   name="phoneNumber"
+                                                   type="tel"
+                                                   placeholder="Enter your phone number"
+                                                   required
+                                                   class="block w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300" />
+                                        </div>
+                                        <p v-if="errors.phoneNumber" class="mt-2 text-sm text-red-600">{{ errors.phoneNumber }}</p>
+                                    </div>
+
+                                    <div class="relative">
+                                        <label for="city" class="block text-sm font-medium text-gray-700">City <span class="text-red-500">*</span></label>
+                                        <div class="mt-1">
+                                            <select v-model="form.city"
+                                                    @blur="validateCity"
+                                                    id="city"
+                                                    name="city"
+                                                    required
+                                                    class="block w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300">
+                                                <option value="">Select a city</option>
+                                                <option v-for="city in bulgarianCities" 
+                                                        :key="city" 
+                                                        :value="city">
+                                                    {{ city }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <p v-if="errors.city" class="mt-2 text-sm text-red-600">{{ errors.city }}</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        
+
                         <div v-if="errors.general" class="rounded-lg bg-red-50 p-4">
                             <div class="flex">
                                 <div class="flex-shrink-0">
@@ -376,6 +540,7 @@ export default {
                                 </div>
                             </div>
                         </div>
+                    
 
                         <div>
                             <button type="submit" 

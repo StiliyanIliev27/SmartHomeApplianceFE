@@ -7,7 +7,6 @@ import productApi from '@/api/productApi';
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useToast } from 'vue-toastification'
 import { reviewApi } from '@/api/reviewApi'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 export default {
     name: 'ProductDetails',

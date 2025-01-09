@@ -19,6 +19,7 @@ import AdminProducts from '@/components/Admin/AdminProducts.vue'
 import AdminOrders from '@/components/Admin/AdminOrders.vue'
 import AdminOrderDetails from '@/components/Admin/AdminOrderDetails.vue'
 import About from '@/components/About.vue'
+import UserProfile from '@/components/UserProfile/UserProfile.vue'
 
 export const menuItems = [
   { path: '/admin/users', name: 'Users', icon: 'UserIcon' },
@@ -130,6 +131,12 @@ const routes = [
     name: 'AdminOrderDetails',
     component: AdminOrderDetails,
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/profile',
+    name: 'UserProfile',
+    component: UserProfile,
+    meta: { requiresAuth: true }
   }
 ];
 
