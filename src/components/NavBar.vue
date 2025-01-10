@@ -14,7 +14,8 @@ import {
     HeartIcon,
     InformationCircleIcon,
     XMarkIcon as XIcon,
-    ClipboardDocumentListIcon
+    ClipboardDocumentListIcon,
+    UserGroupIcon
 } from '@heroicons/vue/24/outline'
 import { cartService } from '@/services/cartService'
 import cartApi from '@/api/cartApi'
@@ -92,6 +93,7 @@ export default {
                 { name: 'Products', href: '/shop', icon: ShoppingBagIcon },
                 { name: 'My Orders', href: '/orders', icon: ClipboardDocumentListIcon },
                 { name: 'Cart', href: '/cart', icon: ShoppingCartIcon },
+                { name: 'Technicians', href: '/technicians', icon: UserGroupIcon },
                 { name: 'Support', href: '/support', icon: PhoneIcon },
                 { name: 'About', href: '/about', icon: InformationCircleIcon },
             ],

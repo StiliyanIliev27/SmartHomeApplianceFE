@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <script src="https://kit.fontawesome.com/1fbb3d877c.js" crossorigin="anonymous"></script>
+    <script type="module">
+      const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
+      document.head.appendChild(script);
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
   </head>
