@@ -28,6 +28,71 @@ HomeCraft is a modern e-commerce platform for smart home devices built with Vue.
 
 ![Home-Page](https://github.com/user-attachments/assets/d4c0d272-47c8-4c6c-8815-b7831df05cf7)
 
+## 📸 Application Screenshots
+
+<details>
+<summary>🏠 Not Authorized Homepage & Authorized</summary>
+<br>
+
+| Not Authorized Landing Page | Authorized Landing Page |
+|-------------|-------------|
+| ![Home-Page](https://github.com/user-attachments/assets/d4c0d272-47c8-4c6c-8815-b7831df05cf7) | ![Screenshot 2025-01-11 212623](https://github.com/user-attachments/assets/279d5208-e67c-4aa0-8202-a615515ba432) |
+
+
+*Modern landing page with hero section and intuitive navigation*
+</details>
+
+<details>
+<summary>🛍️ Shopping Experience</summary>
+<br>
+
+| Product Catalog | Product Details and Reviews |
+|----------------|-----------------|
+| ![Screenshot 2025-01-11 211715](https://github.com/user-attachments/assets/0e2f58cb-711b-4444-81c7-1de281f6aa98) | ![Screenshot 2025-01-11 212321](https://github.com/user-attachments/assets/4a1a688a-cd95-4d94-bf0f-6dba9d807076) |
+| ![Screenshot 2025-01-11 212725](https://github.com/user-attachments/assets/cecae9bf-2c29-420f-b80c-57d1de182420) |![Screenshot 2025-01-11 212336](https://github.com/user-attachments/assets/f72dab0c-0b98-4603-8f26-c4837d8dac00) |
+
+*Seamless shopping experience with detailed product information*
+</details>
+
+
+<details>
+<summary>👤 User Features</summary>
+<br>
+
+| Profile Dashboard | Order History |
+|------------------|---------------|
+| ![Screenshot 2025-01-11 212846](https://github.com/user-attachments/assets/0656dec8-b789-4e32-a461-5733169e7e42) | ![Screenshot 2025-01-11 212641](https://github.com/user-attachments/assets/2bdc9e5c-649b-4d5c-ae22-1f972f7a2ca0) |
+
+*Comprehensive user profile management*
+</details>
+
+<details>
+<summary>🗺️ Maps Integration</summary>
+<br>
+
+| Technicians Map |
+|-----------------|
+| ![Screenshot 2025-01-11 212754](https://github.com/user-attachments/assets/0f2e6c20-ab80-45b8-9c49-ed5f3ec0d402) |
+
+*Google Maps integration for technician location services*
+</details>
+
+<details>
+<summary>⚙️ Admin Dashboard</summary>
+<br>
+
+| Analytics | User Management |
+|-----------|----------------|
+| ![Screenshot 2025-01-11 212501](https://github.com/user-attachments/assets/a1f2a607-3c8f-49f0-8892-0ebd34c27b54) | ![Screenshot 2025-01-11 212513](https://github.com/user-attachments/assets/473c66e9-4987-478a-be83-bd3a9ef23cb9) |
+
+| Product Management | Order Management |
+|-----------|----------------|
+| ![Screenshot 2025-01-11 212513](https://github.com/user-attachments/assets/34110609-7de0-40cb-b3c8-f2104b934586) | ![Screenshot 2025-01-11 212537](https://github.com/user-attachments/assets/e71e592d-d22b-483d-8180-4b9e098df2f1) | 
+
+*Powerful admin tools for platform management*
+</details>
+
+
 ## ✨ Key Features
 
 ### 🔐 Authentication & Authorization
