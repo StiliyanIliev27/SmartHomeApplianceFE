@@ -1,10 +1,23 @@
-# 🏠 HomeCraft - Smart Home E-Commerce Platform
-
 <div align="center">
   <h3>🌟 Where Innovation Meets Comfort 🌟</h3>
+  
+  ![GitHub last commit](https://img.shields.io/github/last-commit/StiliyanIliev27/SmartHomeApplianceFE)
+  ![GitHub repo size](https://img.shields.io/github/repo-size/StiliyanIliev27/SmartHomeApplianceFE)
+  ![GitHub stars](https://img.shields.io/github/stars/StiliyanIliev27/SmartHomeApplianceFE)
+  ![GitHub forks](https://img.shields.io/github/forks/StiliyanIliev27/SmartHomeApplianceFE)
+  [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 </div>
 
+## 🎯 Overview
+
 HomeCraft is a modern e-commerce platform for smart home devices built with Vue.js and ASP.NET Web API. The platform offers an intuitive user interface, AI chatbot assistant, and complete online shopping functionality.
+
+### 🌟 Project Goals
+- Provide a seamless shopping experience for smart home devices
+- Offer intelligent product recommendations through AI
+- Enable real-time support through chatbot integration
+- Ensure secure and efficient payment processing
+- Deliver comprehensive admin tools for platform management
 
 ![Home-Page](https://github.com/user-attachments/assets/d4c0d272-47c8-4c6c-8815-b7831df05cf7)
 
@@ -157,6 +170,16 @@ VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key
 
 ## 📄 License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details. 📜
+
+## 📈 Future Improvements
+
+- [ ] Implement real-time notifications
+- [ ] Add real-time chat and connection between users in the application
+- [ ] Add multi-language support
+- [ ] Enhance mobile experience
+- [ ] Implement progressive web app features
+- [ ] Add more payment methods
+- [ ] Deployment and CI/CD pipeline
 
 ## 🤝 Contributing
 
