@@ -49,10 +49,16 @@ HomeCraft is a modern e-commerce platform for smart home devices built with Vue.
   - 📄 PDF report generation
 
 ### 🎯 Additional Features
-  - 🤖 AI chatbot assistant
-  - 🏷️ Promotional offers
-  - 📱 Responsive design
-  - ⭐ Rating system
+  - 🤖 AI chatbot assistant for real-time customer support
+  - 🏷️ Promotional offers and discount system
+  - 📱 Fully responsive design across all devices
+  - ⭐ Product rating and review system
+  - 🗺️ Google Maps integration for:
+    - 📍 Find nearest technicians
+    - 🔧 Track technician location
+    - 📊 Service area visualization
+    - 🚗 Distance calculation
+  - 📈 Real-time analytics dashboard
 
 ## 💻 Tech Stack
 
@@ -182,6 +188,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 - [ ] Implement real-time notifications
 - [ ] Add real-time chat and connection between users in the application
+- [ ] Add dark/light mode support
 - [ ] Add multi-language support
 - [ ] Enhance mobile experience
 - [ ] Implement progressive web app features
