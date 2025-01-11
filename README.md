@@ -57,7 +57,6 @@ HomeCraft is a modern e-commerce platform for smart home devices built with Vue.
     - 📍 Find nearest technicians
     - 🔧 Track technician location
     - 📊 Service area visualization
-    - 🚗 Distance calculation
   - 📈 Real-time analytics dashboard
 
 ## 💻 Tech Stack
