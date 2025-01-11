@@ -1,3 +1,5 @@
+# 🏠 HomeCraft - Smart Home E-Commerce Platform
+
 <div align="center">
   <h3>🌟 Where Innovation Meets Comfort 🌟</h3>
   
