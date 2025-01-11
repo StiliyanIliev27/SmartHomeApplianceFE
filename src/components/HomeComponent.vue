@@ -159,32 +159,6 @@ export default {
                     verifiedPurchase: true
                 }
             ],
-            popularProducts: [
-                {
-                    name: 'Smart Doorbell Pro',
-                    price: '$129.99',
-                    image: 'https://images.ctfassets.net/v6awd0kabi65/5Sw0Nt2dn8zUeMF2MSfPAb/224aca6d04ba5842c840f48ca5eb73f7/VDP_Carousel_1.jpg?w=1968&h=1553&fl=progressive&q=50&fm=jpg',
-                    rating: 4.8,
-                    reviews: 256,
-                    inStock: true
-                },
-                {
-                    name: 'Home Security Camera',
-                    price: '$89.99',
-                    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeYY18zyMNvy8lYY10Ng-x9WKuoSetgAgLCw&s',
-                    rating: 4.7,
-                    reviews: 189,
-                    inStock: true
-                },
-                {
-                    name: 'Smart Thermostat',
-                    price: '$159.99',
-                    image: 'https://cdn.mos.cms.futurecdn.net/Ek2kyrb7BqbAZXepGvvVYL.jpg',
-                    rating: 4.9,
-                    reviews: 312,
-                    inStock: false
-                }
-            ],
             specialOffers: [
                 {
                     title: 'Holiday Bundle',
@@ -201,8 +175,8 @@ export default {
                 }
             ],
             scrolled: false,
-            cartItems: [], // Added missing cartItems array
-            user: null // Added missing user object
+            cartItems: [], 
+            user: null
         }
     },
     methods: {
@@ -273,64 +247,11 @@ export default {
                 document.documentElement.style.setProperty('--scroll-y', `${window.scrollY}px`);
             });
         },
-        applyDiscount(code) {
-            const offer = this.specialOffers.find(offer => offer.code === code);
-            if (!offer) {
-                this.$notify({
-                    title: 'Invalid Code',
-                    text: 'Please enter a valid discount code',
-                    type: 'error',
-                    duration: 3000
-                });
-                return false;
-            }
-
-            const validUntil = new Date(offer.validUntil);
-            if (validUntil < new Date()) {
-                this.$notify({
-                    title: 'Expired Code',
-                    text: 'This discount code has expired',
-                    type: 'error',
-                    duration: 3000
-                });
-                return false;
-            }
-
-            this.$notify({
-                title: 'Success',
-                text: 'Discount code applied successfully',
-                type: 'success',
-                duration: 3000
-            });
-            return true;
-        },
-        checkout() {
-            if (!this.isAuthenticated) {
-                this.goToLogin();
-                return;
-            }
-
-            if (!this.cartItems.length) {
-                this.$notify({
-                    title: 'Empty Cart',
-                    text: 'Please add items to your cart before checkout',
-                    type: 'warning',
-                    duration: 3000
-                });
-                return;
-            }
-
-            this.$router.push('/checkout');
-        }
-    },
-    computed: {
-        userProfile() {
-            return this.authStore.user || {
-                name: '',
-                email: '',
-                id: '',
-                profilePictureUrl: '/default-user.png'
-            };
+        handleResize() {
+            // Add responsive design logic here
+            this.isMobile = window.innerWidth < 768;
+            this.isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+            this.isDesktop = window.innerWidth >= 1024;
         }
     },
     async created() {
