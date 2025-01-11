@@ -87,7 +87,7 @@ HomeCraft is a modern e-commerce platform for smart home devices built with Vue.
 
 | Product Management | Order Management |
 |-----------|----------------|
-| ![Screenshot 2025-01-11 212513](https://github.com/user-attachments/assets/34110609-7de0-40cb-b3c8-f2104b934586) | ![Screenshot 2025-01-11 212537](https://github.com/user-attachments/assets/e71e592d-d22b-483d-8180-4b9e098df2f1) | 
+| ![Screenshot 2025-01-11 212523](https://github.com/user-attachments/assets/f679d439-2881-4b29-a476-7e03ff2dffad) | ![Screenshot 2025-01-11 212537](https://github.com/user-attachments/assets/e71e592d-d22b-483d-8180-4b9e098df2f1) | 
 
 *Powerful admin tools for platform management*
 </details>
