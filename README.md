@@ -15,11 +15,16 @@
 HomeCraft is a modern e-commerce platform for smart home devices built with Vue.js and ASP.NET Web API. The platform offers an intuitive user interface, AI chatbot assistant, and complete online shopping functionality.
 
 ### 🌟 Project Goals
-- Provide a seamless shopping experience for smart home devices
-- Offer intelligent product recommendations through AI
-- Enable real-time support through chatbot integration
-- Ensure secure and efficient payment processing
-- Deliver comprehensive admin tools for platform management
+- 🛍️ Provide a seamless shopping experience for smart home devices
+- 🤖 Offer intelligent product recommendations through AI
+- 💬 Enable real-time support through chatbot integration
+- 💳 Ensure secure and efficient payment processing
+- ⚙️ Deliver comprehensive admin tools for platform management
+- 📱 Create responsive and intuitive user interface
+- 🔒 Implement robust security measures
+- 🚀 Optimize performance and loading times
+- 📊 Provide detailed analytics and reporting
+- 🔄 Enable seamless integration with external services
 
 ![Home-Page](https://github.com/user-attachments/assets/d4c0d272-47c8-4c6c-8815-b7831df05cf7)
 
