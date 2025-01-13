@@ -161,7 +161,7 @@ git clone https://github.com/StiliyanIliev27/SmartHomeApplianceBE
 2. 🎨 Frontend setup:
 ```bash
 cd SmartHomeApplianceFE
-npm install
+npm install 
 ```
 
 3. ⚙️ Backend setup:
